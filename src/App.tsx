@@ -74,7 +74,7 @@ const App = () => {
         }
       }).then(res => {
         let {data}:any = res;
-        setTokenWithExpiration(data.token,5);
+        setTokenWithExpiration(data.token,60);
         setUser(true);
         alert(data.message);
         setData(initialData);
