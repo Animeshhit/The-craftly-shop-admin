@@ -13,7 +13,7 @@ import axios from 'axios';
 import { userData } from './types/userDataTypes';
 import {LoginType} from './types/LoginFunctionType'
 import { TokenData } from './types/tokenDataType';
-import {baseApiURL} from "./config/api";
+import {baseApiURL} from "./config/api"
 
 
 
