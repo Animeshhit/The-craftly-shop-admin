@@ -26,11 +26,10 @@ const App = () => {
  
 
   const initialData = {
-    mobile:"",
+    mobile:undefined,
     password:""
   }
   const [user,setUser] = useState<null|boolean>(null);
-  const [token,setToken] = useState<null|string>(null);
   const [data,setData] = useState<userData>(initialData);
   const [button,setButton] = useState<boolean>(false);
   
@@ -76,7 +75,6 @@ const App = () => {
         let {data}:any = res;
         setTokenWithExpiration(data.token,5);
         setUser(true);
-        setToken(data.token);
         alert(data.message);
         setData(initialData);
         navigateTo("/")
@@ -120,13 +118,15 @@ const loginOfLoggedIn = async () => {
         "Authorization" : `Bearer ${token}`
       }
     }).then(res  => {
-      setUser(true);
+      let {data} = res;
+      if(data.user){
+        setUser(true);
+      }
     }).catch(err => {
       console.log(err);
       alert("something went wrong");
       setUser(false);
       localStorage.removeItem("__token");
-      setToken(null);
     })
 
   }
@@ -138,8 +138,7 @@ const loginOfLoggedIn = async () => {
 }
 
   useEffect(() => {
-    const storedToken = getToken();
-    setToken(storedToken);
+    getToken();
   loginOfLoggedIn();
   },[]);
 

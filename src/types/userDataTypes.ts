@@ -1,5 +1,5 @@
 interface userData{
-    mobile:Number|string,
+    mobile:undefined | string,
     password:string
   }
 
