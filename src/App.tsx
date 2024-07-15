@@ -13,6 +13,7 @@ import axios from 'axios';
 import { userData } from './types/userDataTypes';
 import {LoginType} from './types/LoginFunctionType'
 import { TokenData } from './types/tokenDataType';
+import {baseApiURL} from "./config/api";
 
 
 
@@ -67,7 +68,7 @@ const App = () => {
    const LoginFunction:LoginType = async () => {
     try{
       setButton(true);
-      axios.post("http://localhost:8080/api/v1/auth/login",data,{
+      axios.post(`${baseApiURL}/auth/login`,data,{
         headers:{
           "Content-Type":"application/json"
         }
@@ -113,7 +114,7 @@ const loginOfLoggedIn = async () => {
 
     let {token}:TokenData = JSON.parse(tokenData);
     
-    axios.get("http://localhost:8080/api/v1/auth/login",{
+    axios.get(`${baseApiURL}/auth/login`,{
       headers:{
         "Authorization" : `Bearer ${token}`
       }
