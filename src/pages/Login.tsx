@@ -30,7 +30,7 @@ export default function Login(props:{button:boolean,data:userData,setData:React.
   }
 
   const loginUser = () => {
-     if(props.data.mobile){
+     if(props.data.mobile == undefined){
       alert("Invalid Mobile number");
     }
     else if(props.data.password == ""){
