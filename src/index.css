@@ -73,3 +73,6 @@
   font-family: "Rubik",sans-serif;
 }
 
+.navbar__nav ul li a.active{
+  @apply bg-gray-700;
+}

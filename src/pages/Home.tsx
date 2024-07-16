@@ -1,8 +1,5 @@
-
 const Home = () => {
-  return (
-    <div>Home</div>
-  )
-}
+  return <div className="font-semibold text-3xl">DashBoard Will Be Here Soon 💕🚀🚀</div>;
+};
 
-export default Home
+export default Home;
