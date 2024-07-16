@@ -73,11 +73,18 @@ const App = () => {
         })
         .then((res) => {
           let { data }: any = res;
-          setTokenWithExpiration(data.token, 60);
-          setUser(true);
-          alert(data.message);
-          setData(initialData);
-          navigateTo("/");
+          if (data.user.isAdmin) {
+            setTokenWithExpiration(data.token, 60);
+            setUser(true);
+            alert(data.message);
+            setData(initialData);
+            navigateTo("/");
+          } else {
+            localStorage.removeItem("__token");
+            setUser(false);
+            alert("You Are Not An Admin");
+            setData(initialData);
+          }
         })
         .catch((err) => {
           if (err.request.status == 401) {
@@ -119,8 +126,12 @@ const App = () => {
         })
         .then((res) => {
           let { data } = res;
-          if (data.user) {
+          console.log(data.user.isAdmin);
+          if (data.user.isAdmin) {
             setUser(true);
+          } else {
+            setUser(false);
+            localStorage.removeItem("__token");
           }
         })
         .catch((err) => {
