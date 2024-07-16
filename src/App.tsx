@@ -17,6 +17,10 @@ import Banners from "./pages/Banners";
 import Products from "./pages/Products";
 import Orders from "./pages/Orders";
 import Users from "./pages/Users";
+import { Skeleton } from "./components/ui/skeleton";
+import LoadingPage from "./components/LoadingPage";
+import { ProductsLoadingPage } from "./components/LoadingPage";
+import AddProduct from "./pages/AddProduct";
 
 const App = () => {
   const navigateTo = useNavigate();
@@ -84,6 +88,7 @@ const App = () => {
             setUser(false);
             alert("You Are Not An Admin");
             setData(initialData);
+            setButton(false);
           }
         })
         .catch((err) => {
@@ -147,21 +152,31 @@ const App = () => {
     }
   };
 
-  useEffect(() => {
+  const session = () => {
     getToken();
     loginOfLoggedIn();
+  };
+
+  useEffect(() => {
+    session();
   }, []);
 
   return (
     <>
-      {user == null ? "" : user ? <Navbar /> : ""}
+      {user == null ? (
+        <Skeleton className="w-[300px] fixed top-0 left-0 bottom-0 bg-zinc-800 rounded-none" />
+      ) : user ? (
+        <Navbar />
+      ) : (
+        ""
+      )}
       <Routes>
         <Route
           path="/"
           element={
             <Layout>
               {user == null ? (
-                "loading..."
+                <LoadingPage />
               ) : user ? (
                 <Home />
               ) : (
@@ -200,7 +215,10 @@ const App = () => {
           element={
             <Layout>
               {user == null ? (
-                "loading..."
+                <div>
+                  <Skeleton className="mb-4 w-[200px] h-8 bg-zinc-800 rounded-md" />
+                  <ProductsLoadingPage />
+                </div>
               ) : user ? (
                 <Products />
               ) : (
@@ -209,6 +227,24 @@ const App = () => {
             </Layout>
           }
         />
+        <Route
+          path="/addproduct"
+          element={
+            <Layout>
+              {user == null ? (
+                <div>
+                  <Skeleton className="mb-4 w-[200px] h-8 bg-zinc-800 rounded-md" />
+                  <ProductsLoadingPage />
+                </div>
+              ) : user ? (
+                <AddProduct />
+              ) : (
+                <Navigate to="/login" replace={true} />
+              )}
+            </Layout>
+          }
+        />
+
         <Route
           path="/users"
           element={
