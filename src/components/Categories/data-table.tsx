@@ -33,6 +33,7 @@ import {
   DialogHeader,
   DialogTitle,
   DialogTrigger,
+  DialogClose,
 } from "../ui/dialog";
 import { Label } from "../ui/label";
 
@@ -63,15 +64,17 @@ export function DataTable<TData, TValue>({
   const AddNewCtg = () => {
     let token = getToken();
 
+    if (!ctgInput || ctgInput == "") {
+      alert("Please Enter a valid categories Name");
+      return;
+    }
+
     if (!token) {
       alert("Session Expired");
       dispatch(login(false));
       return;
     }
-    if (!ctgInput || ctgInput == "") {
-      alert("Please Enter a valid categories Name");
-      return;
-    }
+
     try {
       axios
         .post(
@@ -91,11 +94,9 @@ export function DataTable<TData, TValue>({
           if (Array.isArray(ctgs)) {
             dispatch(setCtg([...ctgs, data.newctg]));
           }
-          console.log(data);
           alert(data.message);
         })
         .catch((err) => {
-          console.log(err);
           if (err.request.status == 401) {
             alert(err.response.data.message);
           } else if (err.request.status == 403) {
@@ -165,9 +166,17 @@ export function DataTable<TData, TValue>({
               </div>
             </div>
             <DialogFooter>
-              <Button type="submit" onClick={AddNewCtg}>
-                Save
-              </Button>
+              {ctgInput == "" || !ctgInput ? (
+                <Button type="submit" onClick={AddNewCtg}>
+                  Save
+                </Button>
+              ) : (
+                <DialogClose asChild>
+                  <Button type="submit" onClick={AddNewCtg}>
+                    Save
+                  </Button>
+                </DialogClose>
+              )}
             </DialogFooter>
           </DialogContent>
         </Dialog>
