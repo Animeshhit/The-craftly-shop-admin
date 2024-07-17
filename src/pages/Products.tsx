@@ -1,11 +1,11 @@
 //core
 import { useState, useEffect } from "react";
-import { NavLink } from "react-router-dom";
+
 
 import { Product, columns } from "../components/ProductTable/columns";
 import { DataTable } from "../components/ProductTable/data-table";
 import axios from "axios";
-import { Button } from "../components/ui/button";
+
 import { ProductsLoadingPage } from "../components/LoadingPage";
 
 const Products = () => {
@@ -39,11 +39,7 @@ const Products = () => {
   return (
     <>
       <h1 className="text-2xl font-semibold font-poppins">Products</h1>
-      <div className="mt-8 flex items-center justify-end">
-        <NavLink to="/addproduct">
-          <Button>Create New Product</Button>
-        </NavLink>
-      </div>
+   
       <div className="mt-6">
         {!data && <ProductsLoadingPage />}
         {data && <DataTable columns={columns} data={data} />}

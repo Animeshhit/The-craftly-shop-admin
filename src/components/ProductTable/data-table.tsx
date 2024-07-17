@@ -1,10 +1,19 @@
+//core
+import { NavLink } from "react-router-dom";
+import { useEffect, useState } from "react";
+
+//others
 import {
   ColumnDef,
+  ColumnFiltersState,
   flexRender,
   getCoreRowModel,
+  getFilteredRowModel,
   getPaginationRowModel,
   useReactTable,
 } from "@tanstack/react-table";
+
+import { CategoriesData } from "../Categories/columns";
 
 import {
   Table,
@@ -15,6 +24,15 @@ import {
   TableRow,
 } from "../ui/table";
 import { Button } from "../ui/button";
+import { Input } from "../ui/input";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "../ui/select";
+import axios from "axios";
 
 interface DataTableProps<TData, TValue> {
   columns: ColumnDef<TData, TValue>[];
@@ -25,16 +43,99 @@ export function DataTable<TData, TValue>({
   columns,
   data,
 }: DataTableProps<TData, TValue>) {
+  const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]);
   const table = useReactTable({
     data,
     columns,
     getCoreRowModel: getCoreRowModel(),
     getPaginationRowModel: getPaginationRowModel(),
+    onColumnFiltersChange: setColumnFilters,
+    getFilteredRowModel: getFilteredRowModel(),
+    state: {
+      columnFilters,
+    },
   });
+
+  // ==================================Categories=====================
+  const [ctg, setCtg] = useState<CategoriesData[] | [] | null>();
+
+  const getAllCtg = () => {
+    try {
+      axios
+        .get("https://66969cf60312447373c32c65.mockapi.io/categories")
+        .then((res) => {
+          let { data } = res;
+          //for this api only
+          let uniqueCtgs = data.filter(
+            (
+              item: CategoriesData,
+              index: Number,
+              self: CategoriesData[] | []
+            ) => index == self.findIndex((t: any) => t.name == item.name)
+          );
+          setCtg(uniqueCtgs);
+        })
+        .catch((err) => {
+          console.log(err);
+          alert("something went wrong");
+          setCtg([]);
+        });
+    } catch (err) {
+      console.log(err);
+      alert("Network connection error");
+      setCtg([]);
+    }
+  };
+
+  useEffect(() => {
+    getAllCtg();
+  }, []);
 
   return (
     <div className="max-w-6xl">
-      <div className="rounded-md border">
+      <div className="mt-8 flex items-center justify-between">
+        <div className="flex items-center gap-4">
+          <div className="flex items-center py-4">
+            <Input
+              placeholder="Filter products"
+              value={
+                (table.getColumn("name")?.getFilterValue() as string) ?? ""
+              }
+              onChange={(event) =>
+                table.getColumn("name")?.setFilterValue(event.target.value)
+              }
+              className="w-[350px]"
+            />
+          </div>
+          <div className="flex items-center py-4">
+            {/* ====================================== */}
+            <Select
+              value={
+                (table.getColumn("categories")?.getFilterValue() as string) ??
+                ""
+              }
+              onValueChange={(event) => {
+                table.getColumn("categories")?.setFilterValue(event);
+              }}
+            >
+              <SelectTrigger className="w-[250px]">
+                <SelectValue placeholder="Sort by Categories" />
+              </SelectTrigger>
+              <SelectContent>
+                {ctg && ctg.length
+                  ? ctg.map((c) => (
+                      <SelectItem value={c.name}>{c.name}</SelectItem>
+                    ))
+                  : "Not Found"}
+              </SelectContent>
+            </Select>
+          </div>
+        </div>
+        <NavLink to="/addproduct">
+          <Button>Create New Product</Button>
+        </NavLink>
+      </div>
+      <div className="rounded-md mt-6 border">
         <Table>
           <TableHeader>
             {table.getHeaderGroups().map((headerGroup) => (
