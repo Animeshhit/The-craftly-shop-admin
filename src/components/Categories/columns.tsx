@@ -28,6 +28,15 @@ export const columns: ColumnDef<CategoriesData>[] = [
   {
     accessorKey: "name",
     header: "Name",
+    cell: ({ row }) => {
+      const name = row.getValue<string>("name");
+      return (
+        <div className="flex items-center gap-2 bg-zinc-200 w-max px-2 py-1 rounded-full">
+          <img src="/headphone.svg" className="w-5 h-5" />
+          {name}
+        </div>
+      );
+    },
   },
   {
     accessorKey: "createdAt",
