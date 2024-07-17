@@ -85,6 +85,7 @@ const App = () => {
             setUser(true);
             alert(data.message);
             setData(initialData);
+            setButton(false);
             navigateTo("/");
           } else {
             localStorage.removeItem("__token");
