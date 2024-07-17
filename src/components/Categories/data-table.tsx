@@ -78,6 +78,7 @@ export function DataTable<TData, TValue>({
     }
 
     try {
+      setSubmitBtn(true);
       axios
         .post(
           `${import.meta.env.VITE_ADMIN_API_URL}/create-new-ctg`,
@@ -96,6 +97,7 @@ export function DataTable<TData, TValue>({
           if (Array.isArray(ctgs)) {
             dispatch(setCtg([...ctgs, data.newctg]));
           }
+          setSubmitBtn(false);
           alert(data.message);
         })
         .catch((err) => {
@@ -107,9 +109,11 @@ export function DataTable<TData, TValue>({
             console.log(err);
             alert("something went wrong");
           }
+          setSubmitBtn(false);
         });
     } catch (err) {
       console.log(err);
+      setSubmitBtn(false);
       alert("network connection error");
     } finally {
       setCtgInput("");
