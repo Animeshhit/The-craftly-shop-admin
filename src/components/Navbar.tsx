@@ -1,15 +1,24 @@
 import { NavLink } from "react-router-dom";
-import { useState } from "react";
+import React, { useState } from "react";
 
-const Navbar = () => {
+interface propsType {
+  setUser: React.Dispatch<React.SetStateAction<boolean | null>>;
+}
+const Navbar = (props: propsType) => {
   // ===============for product dropdown ===================================
   const [pDropDown, setPDropDown] = useState(false);
   const openPDropDown = () => {
     setPDropDown((state) => !state);
   };
+
+  // ================log out ==================
+  const logOut = () => {
+    localStorage.removeItem("__token");
+    props.setUser(false);
+  };
   return (
     <>
-      <section className="fixed left-0 top-0 bottom-0 w-[300px] bg-gray-900">
+      <section className="fixed left-0 top-0 bottom-0 overflow-auto pb-12 w-[300px] custom-scrollbar bg-gray-900">
         <h1 className="text-center mt-4 text-white flex items-center gap-2 px-4">
           <div className="w-5 h-5">
             <img className="w-full h-full" src="/store.svg" />
@@ -63,8 +72,11 @@ const Navbar = () => {
                 Banners
               </NavLink>
             </li>
-            <li className="relative" onClick={openPDropDown}>
-              <span className="text-white px-4 py-2 rounded-md transition hover:bg-gray-700 flex items-center justify-between cursor-pointer mb-4">
+            <li className="relative">
+              <span
+                className="text-white px-4 py-2 rounded-md transition hover:bg-gray-700 flex items-center justify-between cursor-pointer mb-4"
+                onClick={openPDropDown}
+              >
                 <div className="flex items-center gap-3">
                   <svg
                     width="15"
@@ -171,6 +183,28 @@ const Navbar = () => {
                       Catagories List
                     </NavLink>
                   </li>
+                  <li>
+                    <NavLink
+                      className="text-white gap-3 px-4 py-2 rounded-md transition hover:bg-gray-700 flex items-center mb-4"
+                      to="/drafts"
+                    >
+                      <svg
+                        width="15"
+                        height="15"
+                        viewBox="0 0 15 15"
+                        fill="none"
+                        xmlns="http://www.w3.org/2000/svg"
+                      >
+                        <path
+                          d="M4.5 2C3.11929 2 2 3.11929 2 4.5C2 5.88072 3.11929 7 4.5 7C5.88072 7 7 5.88072 7 4.5C7 3.11929 5.88072 2 4.5 2ZM3 4.5C3 3.67157 3.67157 3 4.5 3C5.32843 3 6 3.67157 6 4.5C6 5.32843 5.32843 6 4.5 6C3.67157 6 3 5.32843 3 4.5ZM10.5 2C9.11929 2 8 3.11929 8 4.5C8 5.88072 9.11929 7 10.5 7C11.8807 7 13 5.88072 13 4.5C13 3.11929 11.8807 2 10.5 2ZM9 4.5C9 3.67157 9.67157 3 10.5 3C11.3284 3 12 3.67157 12 4.5C12 5.32843 11.3284 6 10.5 6C9.67157 6 9 5.32843 9 4.5ZM2 10.5C2 9.11929 3.11929 8 4.5 8C5.88072 8 7 9.11929 7 10.5C7 11.8807 5.88072 13 4.5 13C3.11929 13 2 11.8807 2 10.5ZM4.5 9C3.67157 9 3 9.67157 3 10.5C3 11.3284 3.67157 12 4.5 12C5.32843 12 6 11.3284 6 10.5C6 9.67157 5.32843 9 4.5 9ZM10.5 8C9.11929 8 8 9.11929 8 10.5C8 11.8807 9.11929 13 10.5 13C11.8807 13 13 11.8807 13 10.5C13 9.11929 11.8807 8 10.5 8ZM9 10.5C9 9.67157 9.67157 9 10.5 9C11.3284 9 12 9.67157 12 10.5C12 11.3284 11.3284 12 10.5 12C9.67157 12 9 11.3284 9 10.5Z"
+                          fill="currentColor"
+                          fill-rule="evenodd"
+                          clip-rule="evenodd"
+                        ></path>
+                      </svg>
+                      Drafts
+                    </NavLink>
+                  </li>
                 </ul>
               </div>
             </li>
@@ -243,8 +277,8 @@ const Navbar = () => {
                 Cuppon Codes
               </NavLink>
             </li>
-            <li>
-              <span className="text-white gap-3 px-4 py-2 rounded-md transition hover:bg-gray-700 flex items-center">
+            <li onClick={logOut}>
+              <span className="text-white cursor-pointer gap-3 px-4 py-2 rounded-md transition hover:bg-gray-700 flex items-center">
                 <svg
                   width="15"
                   height="15"

@@ -33,7 +33,7 @@ export function DataTable<TData, TValue>({
   });
 
   return (
-    <div>
+    <div className="max-w-6xl">
       <div className="rounded-md border">
         <Table>
           <TableHeader>

@@ -47,9 +47,9 @@ const ProductsLoadingPage: React.FC = () => {
   const rows = Array.from({ length: 8 }); // Adjust the number of rows as needed
 
   return (
-    <div className="p-4">
+    <div className="p-4 max-w-[1200px]">
       <div className="overflow-x-auto">
-        <table className="min-w-full bg-white">
+        <table className="w-full bg-white">
           <thead>
             <tr>
               <th className="px-4 py-2 text-left text-sm font-semibold text-gray-600">

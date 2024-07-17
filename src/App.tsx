@@ -21,6 +21,9 @@ import { Skeleton } from "./components/ui/skeleton";
 import LoadingPage from "./components/LoadingPage";
 import { ProductsLoadingPage } from "./components/LoadingPage";
 import AddProduct from "./pages/AddProduct";
+import Drafts from "./pages/Drafts";
+import Categories from "./pages/Categories";
+import CupponCode from "./pages/CupponCode";
 
 const App = () => {
   const navigateTo = useNavigate();
@@ -166,7 +169,7 @@ const App = () => {
       {user == null ? (
         <Skeleton className="w-[300px] fixed top-0 left-0 bottom-0 bg-zinc-800 rounded-none" />
       ) : user ? (
-        <Navbar />
+        <Navbar setUser={setUser} />
       ) : (
         ""
       )}
@@ -238,6 +241,59 @@ const App = () => {
                 </div>
               ) : user ? (
                 <AddProduct />
+              ) : (
+                <Navigate to="/login" replace={true} />
+              )}
+            </Layout>
+          }
+        />
+
+        <Route
+          path="/categories"
+          element={
+            <Layout>
+              {user == null ? (
+                <div>
+                  <Skeleton className="mb-4 w-[200px] h-8 bg-zinc-800 rounded-md" />
+                  <ProductsLoadingPage />
+                </div>
+              ) : user ? (
+                <Categories />
+              ) : (
+                <Navigate to="/login" replace={true} />
+              )}
+            </Layout>
+          }
+        />
+
+        <Route
+          path="/drafts"
+          element={
+            <Layout>
+              {user == null ? (
+                <div>
+                  <Skeleton className="mb-4 w-[200px] h-8 bg-zinc-800 rounded-md" />
+                  <ProductsLoadingPage />
+                </div>
+              ) : user ? (
+                <Drafts />
+              ) : (
+                <Navigate to="/login" replace={true} />
+              )}
+            </Layout>
+          }
+        />
+        <Route
+          path="/cuppon-codes"
+          element={
+            <Layout>
+              {user == null ? (
+                <div>
+                  <Skeleton className="mb-4 w-[200px] h-8 bg-zinc-800 rounded-md" />
+                  <ProductsLoadingPage />
+                </div>
+              ) : user ? (
+                <CupponCode />
               ) : (
                 <Navigate to="/login" replace={true} />
               )}
