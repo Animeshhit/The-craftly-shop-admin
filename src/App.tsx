@@ -10,7 +10,6 @@ import axios from "axios";
 import { userData } from "./types/userDataTypes";
 import { LoginType } from "./types/LoginFunctionType";
 import { TokenData } from "./types/tokenDataType";
-import { baseApiURL } from "./config/api";
 import Navbar from "./components/Navbar";
 import Layout from "./components/Layout";
 import Banners from "./pages/Banners";
@@ -24,9 +23,15 @@ import AddProduct from "./pages/AddProduct";
 import Drafts from "./pages/Drafts";
 import Categories from "./pages/Categories";
 import CupponCode from "./pages/CupponCode";
+import getToken from "./helper/token";
+
+//redux
+import { useDispatch, useSelector } from "react-redux";
+import { login } from "./store/Slices/userSlice";
 
 const App = () => {
   const navigateTo = useNavigate();
+  const dispatch = useDispatch();
 
   // login system ====================================
 
@@ -34,7 +39,7 @@ const App = () => {
     mobile: undefined,
     password: "",
   };
-  const [user, setUser] = useState<null | boolean>(null);
+  let user = useSelector((s: any) => s.user.user);
   const [data, setData] = useState<userData>(initialData);
   const [button, setButton] = useState<boolean>(false);
 
@@ -48,32 +53,11 @@ const App = () => {
     localStorage.setItem("__token", JSON.stringify({ token, expirationTime }));
   };
 
-  const getToken = (): string | null => {
-    const tokenData = localStorage.getItem("__token");
-    if (!tokenData) return null;
-
-    try {
-      const { token, expirationTime }: TokenData = JSON.parse(tokenData);
-      const currentTime = new Date().getTime();
-
-      if (currentTime > expirationTime) {
-        localStorage.removeItem("__token");
-        return null;
-      }
-
-      return token;
-    } catch (error) {
-      console.error("Failed to parse token data:", error);
-      localStorage.removeItem("__token");
-      return null;
-    }
-  };
-
   const LoginFunction: LoginType = async () => {
     try {
       setButton(true);
       axios
-        .post(`${baseApiURL}/auth/login`, data, {
+        .post(`${import.meta.env.VITE_BASE_API_URL}/auth/login`, data, {
           headers: {
             "Content-Type": "application/json",
           },
@@ -82,14 +66,13 @@ const App = () => {
           let { data }: any = res;
           if (data.user.isAdmin) {
             setTokenWithExpiration(data.token, 60);
-            setUser(true);
+            dispatch(login(true));
             alert(data.message);
             setData(initialData);
             setButton(false);
             navigateTo("/");
           } else {
-            localStorage.removeItem("__token");
-            setUser(false);
+            dispatch(login(false));
             alert("You Are Not An Admin");
             setData(initialData);
             setButton(false);
@@ -104,13 +87,13 @@ const App = () => {
             console.log(err);
             alert("something went wrong");
           }
-          setUser(false);
+          dispatch(login(false));
           setButton(false);
         });
     } catch (err) {
       console.log(err);
       alert("Network connection error");
-      setUser(false);
+      dispatch(login(false));
       setButton(false);
     }
   };
@@ -121,38 +104,35 @@ const App = () => {
     try {
       let tokenData = localStorage.getItem("__token");
       if (!tokenData) {
-        setUser(false);
+        dispatch(login(false));
         return;
       }
 
       let { token }: TokenData = JSON.parse(tokenData);
 
       axios
-        .get(`${baseApiURL}/auth/login`, {
+        .get(`${import.meta.env.VITE_BASE_API_URL}/auth/login`, {
           headers: {
             Authorization: `Bearer ${token}`,
           },
         })
         .then((res) => {
           let { data } = res;
-          console.log(data.user.isAdmin);
           if (data.user.isAdmin) {
-            setUser(true);
+            dispatch(login(true));
           } else {
-            setUser(false);
-            localStorage.removeItem("__token");
+            dispatch(login(false));
           }
         })
         .catch((err) => {
           console.log(err);
           alert("something went wrong");
-          setUser(false);
-          localStorage.removeItem("__token");
+          dispatch(login(false));
         });
     } catch (err) {
       console.log(err);
       alert("Network connection error");
-      setUser(false);
+      dispatch(login(false));
     }
   };
 
@@ -170,7 +150,8 @@ const App = () => {
       {user == null ? (
         <Skeleton className="w-[300px] fixed top-0 left-0 bottom-0 bg-zinc-800 rounded-none" />
       ) : user ? (
-        <Navbar setUser={setUser} />
+        //fix error here
+        <Navbar />
       ) : (
         ""
       )}

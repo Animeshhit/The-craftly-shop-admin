@@ -1,33 +1,38 @@
 //core
-import { useState, useEffect } from "react";
+import { useEffect } from "react";
 
 //others
 
-import { CategoriesData, columns } from "../components/Categories/columns";
+import { columns } from "../components/Categories/columns";
 import { DataTable } from "../components/Categories/data-table";
 import axios from "axios";
 import { ProductsLoadingPage } from "../components/LoadingPage";
 
+//redux
+import { useDispatch, useSelector } from "react-redux";
+import { setCtg } from "../store/Slices/ctgSlice";
 
 const Categories = () => {
+  // redux
+  const dispatch = useDispatch();
+  const ctg = useSelector((s: any) => s.ctg);
   // =======================categories========================
-  const [data, setData] = useState<null | CategoriesData[] | []>();
 
   const getCategories = async () => {
     try {
       axios
-        .get("https://66969cf60312447373c32c65.mockapi.io/categories")
+        .get(`${import.meta.env.VITE_BASE_API_URL}/categories`)
         .then((res) => {
           let { data } = res;
-          setData(data);
+          dispatch(setCtg(data));
         })
         .catch((err) => {
-          setData([]);
+          dispatch(setCtg([]));
           console.log(err);
           alert("something went wrong");
         });
     } catch (err) {
-      setData([]);
+      dispatch(setCtg([]));
       console.log(err);
       alert("Network connection error");
     }
@@ -40,10 +45,10 @@ const Categories = () => {
   return (
     <>
       <h1 className="text-2xl font-semibold font-poppins">Categories</h1>
-     
+
       <div className="mt-4">
-        {!data && <ProductsLoadingPage />}
-        {data && <DataTable columns={columns} data={data} />}
+        {!ctg && <ProductsLoadingPage />}
+        {ctg && <DataTable columns={columns} data={ctg} />}
       </div>
     </>
   );

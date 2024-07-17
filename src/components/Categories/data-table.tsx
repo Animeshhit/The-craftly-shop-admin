@@ -1,4 +1,7 @@
-import { useState } from "react";
+import React, { useState } from "react";
+
+//others
+import getToken from "../../helper/token";
 
 import {
   ColumnDef,
@@ -11,6 +14,8 @@ import {
   ColumnFiltersState,
   getFilteredRowModel,
 } from "@tanstack/react-table";
+
+import axios from "axios";
 
 import {
   Table,
@@ -34,6 +39,11 @@ import { Label } from "../ui/label";
 import { Button } from "../ui/button";
 import { Input } from "../ui/input";
 
+//redux
+import { useDispatch, useSelector } from "react-redux";
+import { login } from "../../store/Slices/userSlice";
+import { setCtg } from "../../store/Slices/ctgSlice";
+
 interface DataTableProps<TData, TValue> {
   columns: ColumnDef<TData, TValue>[];
   data: TData[];
@@ -43,8 +53,66 @@ export function DataTable<TData, TValue>({
   columns,
   data,
 }: DataTableProps<TData, TValue>) {
+  const dispatch = useDispatch();
+  const ctgs = useSelector((s: any) => s.ctg);
   const [sorting, setSorting] = useState<SortingState>([]);
   const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]);
+
+  // =================================for adding ctg ==================================
+  const [ctgInput, setCtgInput] = useState("");
+  const AddNewCtg = () => {
+    let token = getToken();
+
+    if (!token) {
+      alert("Session Expired");
+      dispatch(login(false));
+      return;
+    }
+    if (!ctgInput || ctgInput == "") {
+      alert("Please Enter a valid categories Name");
+      return;
+    }
+    try {
+      axios
+        .post(
+          `${import.meta.env.VITE_ADMIN_API_URL}/create-new-ctg`,
+          {
+            name: ctgInput,
+          },
+          {
+            headers: {
+              Authorization: `Bearer ${token}`,
+              "Content-Type": "application/json",
+            },
+          }
+        )
+        .then((res) => {
+          let { data } = res;
+          if (Array.isArray(ctgs)) {
+            dispatch(setCtg([...ctgs, data.newctg]));
+          }
+          console.log(data);
+          alert(data.message);
+        })
+        .catch((err) => {
+          console.log(err);
+          if (err.request.status == 401) {
+            alert(err.response.data.message);
+          } else if (err.request.status == 403) {
+            alert(err.response.data.message);
+          } else {
+            console.log(err);
+            alert("something went wrong");
+          }
+        });
+    } catch (err) {
+      console.log(err);
+      alert("network connection error");
+    } finally {
+      setCtgInput("");
+    }
+  };
+  // ====================================================================================
 
   const table = useReactTable({
     data,
@@ -85,11 +153,21 @@ export function DataTable<TData, TValue>({
                 <Label htmlFor="name" className="text-right">
                   Name
                 </Label>
-                <Input id="name" value="Pedro Duarte" className="col-span-5" />
+                <Input
+                  id="name"
+                  placeholder="Enter Categories Name..."
+                  value={ctgInput}
+                  className="col-span-5"
+                  onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
+                    setCtgInput(e.target.value);
+                  }}
+                />
               </div>
             </div>
             <DialogFooter>
-              <Button type="submit">Save</Button>
+              <Button type="submit" onClick={AddNewCtg}>
+                Save
+              </Button>
             </DialogFooter>
           </DialogContent>
         </Dialog>
