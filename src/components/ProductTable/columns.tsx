@@ -14,11 +14,11 @@ import {
 // This type is used to define the shape of our data.
 // You can use a Zod schema here if you want.
 export type Product = {
-  id: string;
+  _id: string;
   name: string;
-  categories: string;
+  catagories: string;
   price: Number;
-  image: string;
+  productImage: string;
   createdAt: number;
 };
 
@@ -28,7 +28,7 @@ export const columns: ColumnDef<Product>[] = [
     header: "Product",
     cell: ({ row }) => {
       const name = row.getValue<string>("name");
-      const image = row.original.image;
+      const image = row.original.productImage;
 
       return (
         <div className="flex items-center">
@@ -47,10 +47,10 @@ export const columns: ColumnDef<Product>[] = [
     },
   },
   {
-    accessorKey: "categories",
+    accessorKey: "catagories",
     header: "Categories",
     cell: ({ row }) => {
-      const name = row.getValue<string>("categories");
+      const name = row.getValue<string>("catagories");
       return (
         <div className="flex items-center gap-2 bg-zinc-200 w-max px-2 py-1 rounded-full">
           <img src="/headphone.svg" className="w-5 h-5" />
@@ -89,7 +89,7 @@ export const columns: ColumnDef<Product>[] = [
             <DropdownMenuLabel>Actions</DropdownMenuLabel>
             <DropdownMenuItem
               className="flex items-center gap-2"
-              onClick={() => navigator.clipboard.writeText(product.id)}
+              onClick={() => navigator.clipboard.writeText(product._id)}
             >
               <svg
                 width="15"

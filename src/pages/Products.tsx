@@ -1,7 +1,6 @@
 //core
 import { useState, useEffect } from "react";
 
-
 import { Product, columns } from "../components/ProductTable/columns";
 import { DataTable } from "../components/ProductTable/data-table";
 import axios from "axios";
@@ -15,10 +14,11 @@ const Products = () => {
   const getProducts = async () => {
     try {
       axios
-        .get("https://66969cf60312447373c32c65.mockapi.io/products")
+        .get(`${import.meta.env.VITE_BASE_API_URL}/products`)
         .then((res) => {
+          console.log(res);
           let { data } = res;
-          setData(data);
+          setData(data.products);
         })
         .catch((err) => {
           setData([]);
@@ -39,7 +39,7 @@ const Products = () => {
   return (
     <>
       <h1 className="text-2xl font-semibold font-poppins">Products</h1>
-   
+
       <div className="mt-6">
         {!data && <ProductsLoadingPage />}
         {data && <DataTable columns={columns} data={data} />}

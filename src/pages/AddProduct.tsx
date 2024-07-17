@@ -1,5 +1,5 @@
 //core
-import { useState, useCallback } from "react";
+import React, { useState, useCallback, useEffect } from "react";
 
 //others
 import { Button } from "../components/ui/button";
@@ -12,33 +12,42 @@ import {
 import { Input } from "../components/ui/input";
 import { Label } from "../components/ui/label";
 import MarkdownEditor from "../components/Markdown";
-import ComboBox from "../components/ComboBox";
-
+// import ComboBox from "../components/ComboBox";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "../components/ui/select";
+import { Checkbox } from "../components/ui/checkbox";
+import { getCategories } from "../helper/categoriesHelper/ctg";
+import { NewProductType } from "../types/NewProductType";
+import getToken from "../helper/token";
+import { ReloadIcon } from "@radix-ui/react-icons";
 // react dropzone
 import { useDropzone, DropzoneOptions } from "react-dropzone";
 
-const AddProduct = () => {
+//redux
+import { useDispatch, useSelector } from "react-redux";
+import { login } from "../store/Slices/userSlice";
+import axios from "axios";
+
+const AddProduct = ({
+  setProgress,
+}: {
+  setProgress: React.Dispatch<React.SetStateAction<number>>;
+}) => {
+  // ctg
+  const dispatch = useDispatch();
+  let ctg = useSelector((s: any) => s.ctg);
+  const [publicBtn, setPublishBtn] = useState<boolean>(false);
   // react dropzone ====================================
-  const onDrop: DropzoneOptions["onDrop"] = useCallback(
-    (acceptedFiles: any) => {
-      acceptedFiles &&
-        Object.keys(acceptedFiles).forEach(async function (_, index) {
-          getImageBaseUrl(acceptedFiles[index]);
-        });
-    },
-    []
-  );
-  const { acceptedFiles, getRootProps, getInputProps, isDragActive } =
-    useDropzone({ onDrop });
 
-  //   ====================data taking from the form ===============
-  const [markdown, setMarkDown] = useState<string>("");
-  const [combobox, setCombox] = useState<string>("");
-
-  // for the image
+  // ===========================preview ======================================
   const [preview, setPreview] = useState<ArrayBuffer[] | string[] | null>(null);
 
-  //function for getting the image url
+  // preview image url ============================================================
 
   const getImageBaseUrl = (image: File) => {
     setPreview([]);
@@ -53,6 +62,250 @@ const AddProduct = () => {
     };
     file.readAsDataURL(image);
   };
+  const onDrop: DropzoneOptions["onDrop"] = useCallback(() => {
+    // acceptedFiles &&
+    //   Object.keys(acceptedFiles).forEach(async function (_, index) {
+    //     getImageBaseUrl(acceptedFiles[index]);
+    //   });
+  }, []);
+  const { acceptedFiles, getRootProps, getInputProps, isDragActive } =
+    useDropzone({
+      accept: {
+        "image/png": [".png"],
+        "image/jpg": [".jpg"],
+        "image/jpeg": [".jpeg"],
+        "image/webp": [".webp"],
+      },
+      onDrop,
+    });
+
+  //   ====================data taking from the form ===============
+
+  const initialNewProduct = {
+    name: {
+      value: "",
+      error: false,
+    },
+    stock: {
+      value: undefined,
+      error: false,
+    },
+    productUniqueId: {
+      value: "",
+      error: false,
+    },
+    basePrice: {
+      value: undefined,
+      error: false,
+    },
+    discountedPrice: {
+      value: undefined,
+      error: false,
+    },
+    categories: {
+      value: "",
+      error: false,
+    },
+    mainImage: {
+      value: "",
+      error: false,
+    },
+    isFeatured: false,
+    isBestSeller: false,
+  };
+  const [newProductData, setNewProductData] =
+    useState<NewProductType>(initialNewProduct);
+  const [markdown, setMarkDown] = useState<string>("");
+  // const [uploadedImages, setUploadedImages] = useState<string[] | []>([]);
+
+  const createNewProduct = async () => {
+    let token = getToken();
+
+    if (!token) {
+      alert("Session Expired");
+      dispatch(login(false));
+      return;
+    }
+    let {
+      name,
+      stock,
+      productUniqueId,
+      basePrice,
+      discountedPrice,
+      categories,
+      mainImage,
+      isBestSeller,
+      isFeatured,
+    }: NewProductType = newProductData;
+    // name
+    if (name.value === "" || name.value == null || name.value == undefined) {
+      alert("Please Provide Product Name Description");
+      setNewProductData({
+        ...newProductData,
+        name: { value: "", error: true },
+      });
+      return;
+    }
+    //stock
+    if (stock.value === "" || stock.value == null || stock.value == undefined) {
+      alert("Please Provide Product stock Number");
+      setNewProductData({
+        ...newProductData,
+        stock: { value: undefined, error: true },
+      });
+      return;
+    }
+    // productUniqueId
+    if (
+      productUniqueId.value === "" ||
+      productUniqueId.value == null ||
+      productUniqueId.value == undefined
+    ) {
+      alert("Please Provide product Unique ID");
+      setNewProductData({
+        ...newProductData,
+        productUniqueId: { value: "", error: true },
+      });
+      return;
+    }
+    // basePrice
+    if (
+      basePrice.value === "" ||
+      basePrice.value == null ||
+      basePrice.value == undefined
+    ) {
+      alert("Please Provide Product Base Price");
+      setNewProductData({
+        ...newProductData,
+        basePrice: { value: undefined, error: true },
+      });
+      return;
+    }
+    // discountedPrice
+    if (
+      discountedPrice.value === "" ||
+      discountedPrice.value == null ||
+      discountedPrice.value == undefined
+    ) {
+      alert("Please Provide Product Discounted Price");
+      setNewProductData({
+        ...newProductData,
+        discountedPrice: { value: undefined, error: true },
+      });
+      return;
+    }
+    // categories
+    if (
+      categories.value === "" ||
+      categories.value == null ||
+      categories.value == undefined
+    ) {
+      alert("Please Provide Product categories");
+      setNewProductData({
+        ...newProductData,
+        categories: { value: "", error: true },
+      });
+      return;
+    }
+    // mainImage
+    if (
+      mainImage.value === "" ||
+      mainImage.value == null ||
+      mainImage.value == undefined
+    ) {
+      alert("Please Provide Product mainImage URL in 4:4 ratio");
+      setNewProductData({
+        ...newProductData,
+        mainImage: { value: "", error: true },
+      });
+      return;
+    }
+    if (markdown == "" || markdown == null || markdown == undefined) {
+      alert("Please Provide Product Description");
+      return;
+    }
+    if (!acceptedFiles.length) {
+      alert("please provide prodcut show case images");
+      return;
+    }
+    setPublishBtn(true);
+    setProgress(30);
+    // file uploaded ========================================
+    const uploadPreset = import.meta.env.VITE_CLD_UPLOADPRESET;
+
+    const uploaders = Array.from(acceptedFiles).map((file) => {
+      const formData = new FormData();
+      formData.append("file", file);
+      formData.append("upload_preset", uploadPreset);
+
+      return axios
+        .post(import.meta.env.VITE_CLD_UPLOAD_URL, formData)
+        .then((response) => response.data);
+    });
+    setProgress(50);
+    const uploadedFilesData = await Promise.all(uploaders);
+    setProgress(80);
+    // file uploaded end ========================================
+    const uploadedUrls = uploadedFilesData.map(
+      (uploaded) => uploaded.secure_url
+    );
+
+    let DATA = {
+      name: name.value,
+      description: markdown,
+      price: basePrice.value,
+      discount: discountedPrice.value,
+      productImage: mainImage.value,
+      productImages: uploadedUrls,
+      catagories: categories.value,
+      productUniqueId: productUniqueId.value,
+      stock: stock.value,
+      isFeatured,
+      isBestSeller,
+    };
+    try {
+      axios
+        .post(`${import.meta.env.VITE_ADMIN_API_URL}/createnewproduct`, DATA, {
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+        })
+        .then((res) => {
+          let { data } = res;
+          alert(data.message);
+          setNewProductData(initialNewProduct);
+          setPublishBtn(false);
+          console.log(data);
+          setProgress(100);
+        })
+        .catch((err) => {
+          console.log(err);
+          setPublishBtn(false);
+          setProgress(100);
+          alert("something went wrong");
+        });
+    } catch (err) {
+      console.log(err);
+      setPublishBtn(false);
+      setProgress(100);
+      alert("Network connection error");
+    }
+  };
+
+  useEffect(() => {
+    if (Array.isArray(acceptedFiles)) {
+      if (!acceptedFiles.length) {
+        setPreview([]);
+      }
+    }
+    acceptedFiles &&
+      Object.keys(acceptedFiles).forEach(async function (_, index) {
+        getImageBaseUrl(acceptedFiles[index]);
+      });
+  }, [acceptedFiles]);
+
+  // const [combobox, setCombox] = useState<string>("");
 
   return (
     <>
@@ -70,11 +323,19 @@ const AddProduct = () => {
           <Button disabled>Discard</Button>
           <Button variant="secondary">Save draft</Button>
           <Button
+            disabled={publicBtn}
             onClick={() => {
-              console.log(acceptedFiles);
+              createNewProduct();
             }}
           >
-            Publish product
+            {publicBtn ? (
+              <>
+                <ReloadIcon className="mr-2 h-4 w-4 animate-spin" />
+                Please wait
+              </>
+            ) : (
+              " Publish product"
+            )}
           </Button>
         </div>
       </div>
@@ -94,7 +355,23 @@ const AddProduct = () => {
                 <div className="grid w-full items-center gap-4">
                   <div className="flex flex-col space-y-1.5">
                     <Label htmlFor="name">Name</Label>
-                    <Input id="name" placeholder="Name of your product" />
+                    <Input
+                      value={newProductData.name.value}
+                      name="name"
+                      id="name"
+                      className={
+                        newProductData.name.error
+                          ? "border-2 border-red-600"
+                          : ""
+                      }
+                      onChange={(e: any) => {
+                        setNewProductData({
+                          ...newProductData,
+                          name: { value: e.target.value, error: false },
+                        });
+                      }}
+                      placeholder="Name of your product"
+                    />
                   </div>
                 </div>
                 <div className="flex items-center gap-3 mt-3">
@@ -102,7 +379,20 @@ const AddProduct = () => {
                     <Label htmlFor="stock">Stock</Label>
                     <Input
                       type="number"
+                      value={newProductData.stock.value}
+                      name="stock"
                       id="stock"
+                      className={
+                        newProductData.stock.error
+                          ? "border-2 border-red-600"
+                          : ""
+                      }
+                      onChange={(e: any) => {
+                        setNewProductData({
+                          ...newProductData,
+                          stock: { value: e.target.value, error: false },
+                        });
+                      }}
                       placeholder="Number of stock"
                     />
                   </div>
@@ -110,6 +400,22 @@ const AddProduct = () => {
                     <Label htmlFor="puniqueid">Product Unique Id</Label>
                     <Input
                       type="text"
+                      value={newProductData.productUniqueId.value}
+                      className={
+                        newProductData.productUniqueId.error
+                          ? "border-2 border-red-600"
+                          : ""
+                      }
+                      onChange={(e: any) => {
+                        setNewProductData({
+                          ...newProductData,
+                          productUniqueId: {
+                            value: e.target.value,
+                            error: false,
+                          },
+                        });
+                      }}
+                      name="productUniqueId"
                       id="puniqueid"
                       placeholder="Product unique ID"
                     />
@@ -130,14 +436,14 @@ const AddProduct = () => {
             <CardContent>
               <div
                 {...getRootProps()}
-                className="w-full h-[300px] border-2 border-zinc-800 border-dashed rounded-md flex items-center justify-center"
+                className="w-full h-[300px] overflow-auto border-2 border-zinc-800 border-dashed rounded-md flex items-center justify-center"
               >
                 <input {...getInputProps()} />
                 {isDragActive ? (
                   <p className="text-gray-500">Drop Your Files Here</p>
                 ) : (
                   <div>
-                    <div className="flex items-center gap-1">
+                    <div className="flex items-center flex-col gap-1">
                       {preview && preview?.length ? (
                         preview.map((item) => {
                           return (
@@ -150,7 +456,7 @@ const AddProduct = () => {
                         })
                       ) : (
                         <div className="text-center mt-3">
-                          <p>Drag And Drop Files Here</p>
+                          <p>Drag And Drop Files Here 4:4</p>
                           <Button className="mt-3">Select files</Button>
                         </div>
                       )}
@@ -158,22 +464,13 @@ const AddProduct = () => {
                   </div>
                 )}
               </div>
-              <Button
-                onClick={() => {
-                  setPreview([]);
-                }}
-                className="mt-6 w-full"
-                variant="outline"
-                type="button"
-              >
-                Remove All
-              </Button>
             </CardContent>
           </Card>
         </div>
         {/* right card  */}
         <div className=" w-[350px]">
           {/* top card  */}
+          {/* pricing  */}
           <Card className="w-full">
             <CardHeader>
               <CardTitle className="text-lg font-normal">Pricing</CardTitle>
@@ -183,13 +480,46 @@ const AddProduct = () => {
                 <div className="grid w-full items-center gap-4">
                   <div className="flex flex-col space-y-1.5">
                     <Label htmlFor="bprice">Base Price</Label>
-                    <Input type="number" id="bprice" placeholder="Price" />
+                    <Input
+                      type="number"
+                      value={newProductData.basePrice.value}
+                      className={
+                        newProductData.basePrice.error
+                          ? "border-2 border-red-600"
+                          : ""
+                      }
+                      onChange={(e: any) => {
+                        setNewProductData({
+                          ...newProductData,
+                          basePrice: { value: e.target.value, error: false },
+                        });
+                      }}
+                      name="basePrice"
+                      id="bprice"
+                      placeholder="Price"
+                    />
                   </div>
                   <div className="flex flex-col space-y-1.5">
                     <Label htmlFor="dprice">Discounted Price</Label>
                     <Input
                       type="number"
                       id="dprice"
+                      value={newProductData.discountedPrice.value}
+                      className={
+                        newProductData.discountedPrice.error
+                          ? "border-2 border-red-600"
+                          : ""
+                      }
+                      onChange={(e: any) => {
+                        setNewProductData({
+                          ...newProductData,
+                          discountedPrice: {
+                            value: e.target.value,
+                            error: false,
+                          },
+                        });
+                      }}
+                      name="discountedPrice"
                       placeholder="Discounted Price"
                     />
                   </div>
@@ -198,6 +528,7 @@ const AddProduct = () => {
             </CardContent>
           </Card>
           {/* end card  */}
+          {/* categories */}
           <Card className="mt-6 w-full">
             <CardHeader>
               <CardTitle className="text-lg font-normal">Organize</CardTitle>
@@ -206,13 +537,85 @@ const AddProduct = () => {
               <form>
                 <div className="grid w-full items-center gap-4">
                   <div className="flex flex-col space-y-1.5">
-                    <ComboBox
+                    <Select
+                      onOpenChange={() => {
+                        !ctg && getCategories();
+                      }}
+                      value={newProductData.categories.value}
+                      onValueChange={(event) => {
+                        setNewProductData({
+                          ...newProductData,
+                          categories: { value: event, error: false },
+                        });
+                      }}
+                    >
+                      <SelectTrigger
+                        className={`w-full ${
+                          newProductData.categories.error
+                            ? "border-2 border-red-600"
+                            : ""
+                        }`}
+                      >
+                        <SelectValue placeholder="Select Categories" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {ctg == null ? (
+                          <p className="px-4">Loading...</p>
+                        ) : ctg.length ? (
+                          ctg.map((c: any, index: any) => (
+                            <SelectItem key={index} value={c.name}>
+                              {c.name}
+                            </SelectItem>
+                          ))
+                        ) : (
+                          "Not Found"
+                        )}
+                      </SelectContent>
+                    </Select>
+
+                    {/* <ComboBox
                       labelText="Select categories"
                       searchLabelText="categories"
                       //   frameworks={frameworks}
                       value={combobox}
                       setValue={setCombox}
+                    /> */}
+                  </div>
+                  <div className="flex items-center space-x-2 w-full">
+                    <Checkbox
+                      id="isFeatured"
+                      checked={newProductData.isFeatured}
+                      onCheckedChange={(c: boolean) => {
+                        setNewProductData({
+                          ...newProductData,
+                          isFeatured: c,
+                        });
+                      }}
                     />
+                    <label
+                      htmlFor="isFeatured"
+                      className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+                    >
+                      Featured product
+                    </label>
+                  </div>
+                  <div className="flex items-center space-x-2 w-full">
+                    <Checkbox
+                      id="isBestSeller"
+                      checked={newProductData.isBestSeller}
+                      onCheckedChange={(c: boolean) => {
+                        setNewProductData({
+                          ...newProductData,
+                          isBestSeller: c,
+                        });
+                      }}
+                    />
+                    <label
+                      htmlFor="isBestSeller"
+                      className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+                    >
+                      Bestseller product
+                    </label>
                   </div>
                 </div>
               </form>
@@ -230,7 +633,23 @@ const AddProduct = () => {
                 <div className="grid w-full items-center gap-4">
                   <div className="flex flex-col space-y-1.5">
                     <Label htmlFor="mimage">Main Image</Label>
-                    <Input id="mimage" placeholder="Main Image URL" />
+                    <Input
+                      value={newProductData.mainImage.value}
+                      className={`${
+                        newProductData.mainImage.error
+                          ? "border-2 border-red-600"
+                          : ""
+                      }`}
+                      onChange={(e: any) => {
+                        setNewProductData({
+                          ...newProductData,
+                          mainImage: { value: e.target.value, error: false },
+                        });
+                      }}
+                      name="mainImage"
+                      id="mimage"
+                      placeholder="Main Image URL 4X4"
+                    />
                   </div>
                 </div>
               </form>
@@ -238,7 +657,7 @@ const AddProduct = () => {
           </Card>
 
           {/* main image card  */}
-          <Card className="mt-6 w-full">
+          {/* <Card className="mt-6 w-full">
             <CardHeader>
               <CardTitle className="text-lg font-normal">
                 Product Images
@@ -254,7 +673,7 @@ const AddProduct = () => {
                 </div>
               </form>
             </CardContent>
-          </Card>
+          </Card> */}
 
           {/* variants card  */}
           <Card className="mt-6 w-full">
@@ -262,7 +681,7 @@ const AddProduct = () => {
               <CardTitle className="text-lg font-normal">Variants</CardTitle>
             </CardHeader>
             <CardContent>
-              <p>Variants Will Be Here Soon 🚀🚀</p>
+              <p>Variants Will Be Done Later 🚀🚀</p>
               {/* <form>
                 <div className="grid w-full items-center gap-4">
                   <div className="flex flex-col space-y-1.5">

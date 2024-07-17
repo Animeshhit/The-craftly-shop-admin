@@ -24,6 +24,7 @@ import Drafts from "./pages/Drafts";
 import Categories from "./pages/Categories";
 import CupponCode from "./pages/CupponCode";
 import getToken from "./helper/token";
+import LoadingBar from "react-top-loading-bar";
 
 //redux
 import { useDispatch, useSelector } from "react-redux";
@@ -32,6 +33,8 @@ import { login } from "./store/Slices/userSlice";
 const App = () => {
   const navigateTo = useNavigate();
   const dispatch = useDispatch();
+
+  const [progress, setProgress] = useState<number>(0);
 
   // login system ====================================
 
@@ -147,6 +150,11 @@ const App = () => {
 
   return (
     <>
+      <LoadingBar
+        color="#f11946"
+        progress={progress}
+        onLoaderFinished={() => setProgress(0)}
+      />
       {user == null ? (
         <Skeleton className="w-[300px] fixed top-0 left-0 bottom-0 bg-zinc-800 rounded-none" />
       ) : user ? (
@@ -222,7 +230,7 @@ const App = () => {
                   <ProductsLoadingPage />
                 </div>
               ) : user ? (
-                <AddProduct />
+                <AddProduct setProgress={setProgress} />
               ) : (
                 <Navigate to="/login" replace={true} />
               )}

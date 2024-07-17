@@ -1,6 +1,6 @@
 //core
 import { NavLink } from "react-router-dom";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 
 //others
 import {
@@ -12,8 +12,6 @@ import {
   getPaginationRowModel,
   useReactTable,
 } from "@tanstack/react-table";
-
-import { CategoriesData } from "../Categories/columns";
 
 import {
   Table,
@@ -32,7 +30,10 @@ import {
   SelectTrigger,
   SelectValue,
 } from "../ui/select";
-import axios from "axios";
+import { getCategories } from "../../helper/categoriesHelper/ctg";
+
+//redux
+import { useSelector } from "react-redux";
 
 interface DataTableProps<TData, TValue> {
   columns: ColumnDef<TData, TValue>[];
@@ -57,39 +58,39 @@ export function DataTable<TData, TValue>({
   });
 
   // ==================================Categories=====================
-  const [ctg, setCtg] = useState<CategoriesData[] | [] | null>();
+  let ctg = useSelector((s: any) => s.ctg);
 
-  const getAllCtg = () => {
-    try {
-      axios
-        .get("https://66969cf60312447373c32c65.mockapi.io/categories")
-        .then((res) => {
-          let { data } = res;
-          //for this api only
-          let uniqueCtgs = data.filter(
-            (
-              item: CategoriesData,
-              index: Number,
-              self: CategoriesData[] | []
-            ) => index == self.findIndex((t: any) => t.name == item.name)
-          );
-          setCtg(uniqueCtgs);
-        })
-        .catch((err) => {
-          console.log(err);
-          alert("something went wrong");
-          setCtg([]);
-        });
-    } catch (err) {
-      console.log(err);
-      alert("Network connection error");
-      setCtg([]);
-    }
-  };
+  // const getAllCtg = () => {
+  //   try {
+  //     axios
+  //       .get(`${import.meta.env.VITE_BASE_API_URL}/categories`)
+  //       .then((res) => {
+  //         let { data } = res;
+  //         //for this api only
+  //         // let uniqueCtgs = data.filter(
+  //         //   (
+  //         //     item: CategoriesData,
+  //         //     index: Number,
+  //         //     self: CategoriesData[] | []
+  //         //   ) => index == self.findIndex((t: any) => t.name == item.name)
+  //         // );
+  //         setCtg(data);
+  //       })
+  //       .catch((err) => {
+  //         console.log(err);
+  //         alert("something went wrong");
+  //         setCtg([]);
+  //       });
+  //   } catch (err) {
+  //     console.log(err);
+  //     alert("Network connection error");
+  //     setCtg([]);
+  //   }
+  // };
 
-  useEffect(() => {
-    getAllCtg();
-  }, []);
+  // useEffect(() => {
+  //   getAllCtg();
+  // }, []);
 
   return (
     <div className="max-w-6xl">
@@ -110,23 +111,30 @@ export function DataTable<TData, TValue>({
           <div className="flex items-center py-4">
             {/* ====================================== */}
             <Select
+              onOpenChange={() => {
+                !ctg && getCategories();
+              }}
               value={
-                (table.getColumn("categories")?.getFilterValue() as string) ??
+                (table.getColumn("catagories")?.getFilterValue() as string) ??
                 ""
               }
               onValueChange={(event) => {
-                table.getColumn("categories")?.setFilterValue(event);
+                table.getColumn("catagories")?.setFilterValue(event);
               }}
             >
               <SelectTrigger className="w-[250px]">
                 <SelectValue placeholder="Sort by Categories" />
               </SelectTrigger>
               <SelectContent>
-                {ctg && ctg.length
-                  ? ctg.map((c) => (
-                      <SelectItem value={c.name}>{c.name}</SelectItem>
-                    ))
-                  : "Not Found"}
+                {ctg == null ? (
+                  <p className="px-4">Loading..,</p>
+                ) : ctg.length ? (
+                  ctg.map((c: any) => (
+                    <SelectItem value={c.name}>{c.name}</SelectItem>
+                  ))
+                ) : (
+                  "Not Found"
+                )}
               </SelectContent>
             </Select>
           </div>

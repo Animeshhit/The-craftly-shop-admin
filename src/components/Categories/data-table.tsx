@@ -44,6 +44,7 @@ import { Input } from "../ui/input";
 import { useDispatch, useSelector } from "react-redux";
 import { login } from "../../store/Slices/userSlice";
 import { setCtg } from "../../store/Slices/ctgSlice";
+import { ReloadIcon } from "@radix-ui/react-icons";
 
 interface DataTableProps<TData, TValue> {
   columns: ColumnDef<TData, TValue>[];
@@ -58,6 +59,7 @@ export function DataTable<TData, TValue>({
   const ctgs = useSelector((s: any) => s.ctg);
   const [sorting, setSorting] = useState<SortingState>([]);
   const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]);
+  const [submitBtn, setSubmitBtn] = useState<boolean>(false);
 
   // =================================for adding ctg ==================================
   const [ctgInput, setCtgInput] = useState("");
@@ -167,13 +169,31 @@ export function DataTable<TData, TValue>({
             </div>
             <DialogFooter>
               {ctgInput == "" || !ctgInput ? (
-                <Button type="submit" onClick={AddNewCtg}>
-                  Save
+                <Button disabled={submitBtn} type="submit" onClick={AddNewCtg}>
+                  {submitBtn ? (
+                    <>
+                      <ReloadIcon className="mr-2 h-4 w-4 animate-spin" />
+                      Please wait
+                    </>
+                  ) : (
+                    "Save"
+                  )}
                 </Button>
               ) : (
                 <DialogClose asChild>
-                  <Button type="submit" onClick={AddNewCtg}>
-                    Save
+                  <Button
+                    disabled={submitBtn}
+                    type="submit"
+                    onClick={AddNewCtg}
+                  >
+                    {submitBtn ? (
+                      <>
+                        <ReloadIcon className="mr-2 h-4 w-4 animate-spin" />
+                        Please wait
+                      </>
+                    ) : (
+                      "Save"
+                    )}
                   </Button>
                 </DialogClose>
               )}
