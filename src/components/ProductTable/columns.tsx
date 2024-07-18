@@ -11,6 +11,14 @@ import {
   DropdownMenuTrigger,
 } from "../ui/dropdown-menu";
 
+import getToken from "../../helper/token";
+import axios from "axios";
+
+//redux
+import { login } from "../../store/Slices/userSlice";
+import { setProducts } from "../../store/Slices/productsSlice";
+import Store from "../../store/store";
+
 // This type is used to define the shape of our data.
 // You can use a Zod schema here if you want.
 export type Product = {
@@ -20,6 +28,38 @@ export type Product = {
   price: Number;
   productImage: string;
   createdAt: number;
+};
+
+const deleteProduct = async (id: string, products: any) => {
+  try {
+    let token = getToken();
+    if (!token) {
+      alert("Session Expired");
+      Store.dispatch(login(false));
+      return;
+    }
+    axios
+      .delete(`${import.meta.env.VITE_ADMIN_API_URL}/deleteaproduct?id=${id}`, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      })
+      .then((res) => {
+        let { data } = res;
+        let updatedProducts = products.filter((p: any) => {
+          return p._id !== id;
+        });
+        Store.dispatch(setProducts(updatedProducts));
+        alert(data.message);
+      })
+      .catch((err) => {
+        console.log(err);
+        alert("something went wrong");
+      });
+  } catch (err) {
+    console.log(err);
+    alert("Network connection error");
+  }
 };
 
 export const columns: ColumnDef<Product>[] = [
@@ -151,7 +191,12 @@ export const columns: ColumnDef<Product>[] = [
               </a>
             </DropdownMenuItem>
             <DropdownMenuSeparator />
-            <DropdownMenuItem className="flex items-center gap-2 cursor-pointer bg-red-500 text-white">
+            <DropdownMenuItem
+              onClick={() => {
+                deleteProduct(product._id, Store.getState().products);
+              }}
+              className="flex items-center gap-2 cursor-pointer bg-red-500 text-white"
+            >
               <svg
                 width="15"
                 height="15"

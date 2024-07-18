@@ -1,15 +1,20 @@
 //core
-import { useState, useEffect } from "react";
+import { useEffect } from "react";
 
-import { Product, columns } from "../components/ProductTable/columns";
+import { columns } from "../components/ProductTable/columns";
 import { DataTable } from "../components/ProductTable/data-table";
 import axios from "axios";
 
 import { ProductsLoadingPage } from "../components/LoadingPage";
 
+//redux
+import { useDispatch, useSelector } from "react-redux";
+import { setProducts } from "../store/Slices/productsSlice";
+
 const Products = () => {
   // =======================products========================
-  const [data, setData] = useState<null | Product[] | []>();
+  const products = useSelector((s: any) => s.products);
+  const dispatch = useDispatch();
 
   const getProducts = async () => {
     try {
@@ -18,15 +23,15 @@ const Products = () => {
         .then((res) => {
           console.log(res);
           let { data } = res;
-          setData(data.products);
+          dispatch(setProducts(data.products));
         })
         .catch((err) => {
-          setData([]);
+          dispatch(setProducts([]));
           console.log(err);
           alert("something went wrong");
         });
     } catch (err) {
-      setData([]);
+      dispatch(setProducts([]));
       console.log(err);
       alert("Network connection error");
     }
@@ -41,8 +46,8 @@ const Products = () => {
       <h1 className="text-2xl font-semibold font-poppins">Products</h1>
 
       <div className="mt-6">
-        {!data && <ProductsLoadingPage />}
-        {data && <DataTable columns={columns} data={data} />}
+        {!products && <ProductsLoadingPage />}
+        {products && <DataTable columns={columns} data={products} />}
       </div>
     </>
   );
