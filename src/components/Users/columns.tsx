@@ -15,6 +15,7 @@ import getToken from "../../helper/token";
 import Store from "../../store/store";
 import { login } from "../../store/Slices/userSlice";
 import axios from "axios";
+import { setUsers } from "../../store/Slices/usersSlice";
 
 // This type is used to define the shape of our data.
 // You can use a Zod schema here if you want.
@@ -27,6 +28,7 @@ export type User = {
   createdAt: Date;
 };
 
+//redux
 const changeAccess = async (id: string) => {
   try {
     let token = getToken();
@@ -43,6 +45,18 @@ const changeAccess = async (id: string) => {
       })
       .then((res) => {
         let { data } = res;
+
+        let users = Store.getState().users;
+        if (Array.isArray(users)) {
+          //@ts-ignore
+          const updatedUsers = users.map((u: User) => {
+            if (u._id == id) {
+              return { ...u, isAdmin: !u.isAdmin };
+            }
+            return u;
+          });
+          Store.dispatch(setUsers(updatedUsers));
+        }
         alert(data.message);
       })
       .catch((err) => {
@@ -52,8 +66,6 @@ const changeAccess = async (id: string) => {
   } catch (err) {
     console.log(err);
     alert("Network Connection Error");
-  } finally {
-    alert("Please Refresh the Page");
   }
 };
 

@@ -1,19 +1,20 @@
 //core
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
 
-import { User, columns } from "../components/Users/columns";
+import { columns } from "../components/Users/columns";
 import { DataTable } from "../components/Users/data-table";
 import { ProductsLoadingPage } from "../components/LoadingPage";
 import getToken from "../helper/token";
 import axios from "axios";
 
 //redux
-import { useDispatch } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 import { login } from "../store/Slices/userSlice";
+import { setUsers } from "../store/Slices/usersSlice";
 
 const Users = () => {
   const dispatch = useDispatch();
-  const [users, setUsers] = useState<User[] | [] | null>(null);
+  const users = useSelector((s: any) => s.users);
 
   const getUsers = () => {
     try {
@@ -31,16 +32,16 @@ const Users = () => {
         })
         .then((res) => {
           let { data } = res;
-          setUsers(data);
+          dispatch(setUsers(data));
         })
         .catch((err) => {
           console.log(err);
-          setUsers([]);
+          dispatch(setUsers([]));
           alert("something went wrong");
         });
     } catch (err) {
       console.log(err);
-      setUsers([]);
+      dispatch(setUsers([]));
       alert("Network connection error");
     }
   };
