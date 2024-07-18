@@ -1,6 +1,6 @@
 import { ColumnDef } from "@tanstack/react-table";
 import moment from "moment";
-import { MoreHorizontal } from "lucide-react";
+import { MoreHorizontal, ArrowUpDown } from "lucide-react";
 
 import { Button } from "../ui/button";
 import {
@@ -11,6 +11,10 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "../ui/dropdown-menu";
+import getToken from "../../helper/token";
+import Store from "../../store/store";
+import { login } from "../../store/Slices/userSlice";
+import axios from "axios";
 
 // This type is used to define the shape of our data.
 // You can use a Zod schema here if you want.
@@ -21,6 +25,34 @@ export type User = {
   mobile: number;
   isAdmin: boolean;
   createdAt: Date;
+};
+
+const changeAccess = async (id: string) => {
+  try {
+    let token = getToken();
+    if (!token) {
+      alert("Session Expired");
+      Store.dispatch(login(false));
+      return;
+    }
+    axios
+      .get(`${import.meta.env.VITE_ADMIN_API_URL}/changeadmin?id=${id}`, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      })
+      .then((res) => {
+        let { data } = res;
+        alert(data.message);
+      })
+      .catch((err) => {
+        console.log(err);
+        alert("something went wrong");
+      });
+  } catch (err) {
+    console.log(err);
+    alert("Network Connection Error");
+  }
 };
 
 export const columns: ColumnDef<User>[] = [
@@ -80,7 +112,17 @@ export const columns: ColumnDef<User>[] = [
   },
   {
     accessorKey: "createdAt",
-    header: "Joined on",
+    header: ({ column }) => {
+      return (
+        <Button
+          variant="ghost"
+          onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
+        >
+          Joined on
+          <ArrowUpDown className="ml-2 h-4 w-4" />
+        </Button>
+      );
+    },
     cell: ({ row }) => {
       const date = row.getValue<string>("createdAt");
 
@@ -109,7 +151,11 @@ export const columns: ColumnDef<User>[] = [
             </DropdownMenuItem>
             <DropdownMenuSeparator />
             <DropdownMenuItem>Address</DropdownMenuItem>
-            <DropdownMenuItem>
+            <DropdownMenuItem
+              onClick={() => {
+                changeAccess(user._id);
+              }}
+            >
               {!user.isAdmin ? "Make Admin" : "Remove Admin"}
             </DropdownMenuItem>
             <DropdownMenuSeparator />
