@@ -5,7 +5,6 @@ interface bannerType {
   bannerText?: string;
   isMainImage: boolean;
   createdAt: string;
-  __v: number;
 }
 
 export type { bannerType };

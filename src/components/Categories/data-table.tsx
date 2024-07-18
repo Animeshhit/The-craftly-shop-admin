@@ -149,7 +149,16 @@ export function DataTable<TData, TValue>({
         />
         <Dialog>
           <DialogTrigger asChild>
-            <Button>Add Categories</Button>
+            <Button disabled={submitBtn}>
+              {submitBtn ? (
+                <>
+                  <ReloadIcon className="mr-2 h-4 w-4 animate-spin" />
+                  Please wait
+                </>
+              ) : (
+                "Save banner"
+              )}
+            </Button>
           </DialogTrigger>
           <DialogContent className="sm:max-w-[425px]">
             <DialogHeader>

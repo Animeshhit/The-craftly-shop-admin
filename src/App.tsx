@@ -181,12 +181,18 @@ const App = () => {
         <Route
           path="/login"
           element={
-            <Login
-              button={button}
-              data={data}
-              setData={setData}
-              loginFunc={LoginFunction}
-            />
+            user == null ? (
+              "loading..."
+            ) : user ? (
+              <Navigate to="/" replace={true} />
+            ) : (
+              <Login
+                button={button}
+                data={data}
+                setData={setData}
+                loginFunc={LoginFunction}
+              />
+            )
           }
         />
         <Route
@@ -194,7 +200,14 @@ const App = () => {
           element={
             <Layout>
               {user == null ? (
-                "loading..."
+                <>
+                  <Skeleton className="w-full h-[100px] bg-zinc-800 mb-8" />
+                  {Array.from({ length: 5 }).map(() => {
+                    return (
+                      <Skeleton className="bg-zinc-800 mb-6 w-full h-[450px]" />
+                    );
+                  })}
+                </>
               ) : user ? (
                 <Banners />
               ) : (

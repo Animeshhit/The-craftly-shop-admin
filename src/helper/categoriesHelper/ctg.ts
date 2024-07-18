@@ -33,7 +33,7 @@ const deleteCtg = async (id: string, ctgs: any) => {
       return;
     }
     axios
-      .delete(`${import.meta.env.VITE_ADMIN_API_URL}//delete-ctg?id=${id}`, {
+      .delete(`${import.meta.env.VITE_ADMIN_API_URL}/delete-ctg?id=${id}`, {
         headers: {
           Authorization: `Bearer ${token}`,
         },
