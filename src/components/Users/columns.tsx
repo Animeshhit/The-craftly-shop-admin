@@ -47,11 +47,13 @@ const changeAccess = async (id: string) => {
       })
       .catch((err) => {
         console.log(err);
-        alert("something went wrong");
+        alert(err.response.data.message);
       });
   } catch (err) {
     console.log(err);
     alert("Network Connection Error");
+  } finally {
+    alert("Please Refresh the Page");
   }
 };
 
