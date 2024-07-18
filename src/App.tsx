@@ -68,7 +68,7 @@ const App = () => {
         .then((res) => {
           let { data }: any = res;
           if (data.user.isAdmin) {
-            setTokenWithExpiration(data.token, 120);
+            setTokenWithExpiration(data.token, 1200000);
             dispatch(login(true));
             alert(data.message);
             setData(initialData);
