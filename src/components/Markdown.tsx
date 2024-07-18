@@ -47,7 +47,7 @@ const MarkdownEditor = (props: MarkDownValue) => {
           "image",
         ]}
         placeholder="Product Description"
-        className="rounded h-[400px]"
+        className="rounded h-[400px] max-w-[560px]"
       />
     </div>
   );
