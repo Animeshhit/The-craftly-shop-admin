@@ -21,7 +21,6 @@ const Products = () => {
       axios
         .get(`${import.meta.env.VITE_BASE_API_URL}/products`)
         .then((res) => {
-          console.log(res);
           let { data } = res;
           dispatch(setProducts(data.products));
         })

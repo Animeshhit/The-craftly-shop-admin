@@ -425,8 +425,6 @@ const EditProduct = ({
           let { data } = res;
           let { product } = data;
 
-          console.log(product);
-
           setName(product.name);
           setBasePrice(product.price);
           setStock(product.stock);
