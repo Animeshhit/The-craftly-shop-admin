@@ -23,7 +23,6 @@ import {
 } from "../components/ui/select";
 import { Checkbox } from "../components/ui/checkbox";
 import { getCategories } from "../helper/categoriesHelper/ctg";
-import { NewProductType } from "../types/NewProductType";
 import getToken from "../helper/token";
 import { ReloadIcon } from "@radix-ui/react-icons";
 // react dropzone
