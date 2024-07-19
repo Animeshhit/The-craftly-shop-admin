@@ -25,6 +25,7 @@ import Categories from "./pages/Categories";
 import CupponCode from "./pages/CupponCode";
 import getToken from "./helper/token";
 import LoadingBar from "react-top-loading-bar";
+import EditProduct from "./pages/EditProduct";
 
 //redux
 import { useDispatch, useSelector } from "react-redux";
@@ -252,7 +253,7 @@ const App = () => {
         />
 
         <Route
-          path="/addproduct/edit/:id"
+          path="/editproduct/:id"
           element={
             <Layout>
               {user == null ? (
@@ -261,7 +262,7 @@ const App = () => {
                   <ProductsLoadingPage />
                 </div>
               ) : user ? (
-                <AddProduct setProgress={setProgress} />
+                <EditProduct setProgress={setProgress} />
               ) : (
                 <Navigate to="/login" replace={true} />
               )}

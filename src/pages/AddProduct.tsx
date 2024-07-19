@@ -41,6 +41,9 @@ const AddProduct = ({
   // ctg
   const dispatch = useDispatch();
   let ctg = useSelector((s: any) => s.ctg);
+  const [mainImageUrlPreview, setMainImageUrlPreview] = useState<
+    string | undefined
+  >(undefined);
   const [publicBtn, setPublishBtn] = useState<boolean>(false);
   // react dropzone ====================================
 
@@ -304,6 +307,17 @@ const AddProduct = ({
         getImageBaseUrl(acceptedFiles[index]);
       });
   }, [acceptedFiles]);
+
+  useEffect(() => {
+    if (
+      newProductData.mainImage.value == "" ||
+      !newProductData.mainImage.value
+    ) {
+      setMainImageUrlPreview(undefined);
+      return;
+    }
+    setMainImageUrlPreview(newProductData.mainImage.value);
+  }, [newProductData.mainImage]);
 
   // const [combobox, setCombox] = useState<string>("");
 
@@ -651,6 +665,11 @@ const AddProduct = ({
                       placeholder="Main Image URL 4X4"
                     />
                   </div>
+                  {mainImageUrlPreview && (
+                    <div className="flex flex-col space-y-1.5">
+                      <img src={mainImageUrlPreview} className="w-full" />
+                    </div>
+                  )}
                 </div>
               </form>
             </CardContent>

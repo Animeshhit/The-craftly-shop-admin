@@ -28,7 +28,7 @@ export type Product = {
   _id: string;
   name: string;
   catagories: string;
-  price: Number;
+  discount: Number;
   productImage: string;
   createdAt: number;
 };
@@ -103,10 +103,10 @@ export const columns: ColumnDef<Product>[] = [
     },
   },
   {
-    accessorKey: "price",
+    accessorKey: "discount",
     header: "Price",
     cell: ({ row }) => {
-      const amount = parseFloat(row.getValue("price"));
+      const amount = parseFloat(row.getValue("discount"));
       const formatted = new Intl.NumberFormat("en-IN", {
         style: "currency",
         currency: "INR",
@@ -154,7 +154,7 @@ export const columns: ColumnDef<Product>[] = [
             <DropdownMenuItem className="flex items-center gap-2 cursor-pointer">
               <NavLink
                 className="flex w-full items-center gap-2 cursor-pointer"
-                to={`/addproduct/edit/${product._id}`}
+                to={`/editproduct/${product._id}`}
               >
                 <svg
                   width="15"
