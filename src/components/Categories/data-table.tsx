@@ -156,7 +156,7 @@ export function DataTable<TData, TValue>({
                   Please wait
                 </>
               ) : (
-                "Save banner"
+                "Add New Categories"
               )}
             </Button>
           </DialogTrigger>
