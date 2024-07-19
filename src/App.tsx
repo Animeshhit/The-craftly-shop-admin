@@ -252,6 +252,24 @@ const App = () => {
         />
 
         <Route
+          path="/addproduct/edit/:id"
+          element={
+            <Layout>
+              {user == null ? (
+                <div>
+                  <Skeleton className="mb-4 w-[200px] h-8 bg-zinc-800 rounded-md" />
+                  <ProductsLoadingPage />
+                </div>
+              ) : user ? (
+                <AddProduct setProgress={setProgress} />
+              ) : (
+                <Navigate to="/login" replace={true} />
+              )}
+            </Layout>
+          }
+        />
+
+        <Route
           path="/categories"
           element={
             <Layout>
