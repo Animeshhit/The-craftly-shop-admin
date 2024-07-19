@@ -399,14 +399,14 @@ const EditProduct = ({
 
       let DATA = {
         name,
-        markdown,
-        basePrice,
-        discount,
+        description: markdown,
+        price: basePrice,
+        discount: discount,
         productImage: mainImageUrl,
         catagories: ctgValue,
         productImages: uploadedUrls,
-        productUniqueId,
-        stock,
+        productUniqueId: productUniqueId,
+        stock: stock,
         isFeatured: isFeaturedProduct,
         isBestSeller: isBestSellerProduct,
       };
@@ -424,6 +424,8 @@ const EditProduct = ({
         .then((res) => {
           let { data } = res;
           let { product } = data;
+
+          console.log(product);
 
           setName(product.name);
           setBasePrice(product.price);
