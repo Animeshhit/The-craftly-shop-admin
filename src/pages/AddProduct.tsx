@@ -666,8 +666,12 @@ const AddProduct = ({
                     />
                   </div>
                   {mainImageUrlPreview && (
-                    <div className="flex flex-col space-y-1.5">
-                      <img src={mainImageUrlPreview} className="w-full" />
+                    <div className="flex flex-col space-y-1.5 h-[300px]">
+                      <img
+                        src={mainImageUrlPreview}
+                        className="w-full h-full"
+                        loading="lazy"
+                      />
                     </div>
                   )}
                 </div>
