@@ -154,7 +154,7 @@ const bannerCard = ({
         <CardContent>
           <img
             loading="lazy"
-            className="bg-zinc-800 blur h-[350px] w-full"
+            className="bg-zinc-800 blur object-contain h-[350px] w-full"
             onLoad={(e: any) => e.target.classList.remove("blur")}
             src={data.bannerImage}
             alt={data.bannerText}
