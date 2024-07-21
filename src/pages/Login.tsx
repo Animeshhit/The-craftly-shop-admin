@@ -59,7 +59,7 @@ export default function Login(props:{button:boolean,data:userData,setData:React.
 
             <div className="flex flex-col space-y-1.5">
               <Label htmlFor="password">Password</Label>
-              <Input name='password' value={props.data.password} id="password" required={true} type="text" placeholder="Enter Password" onChange={handleChange}/>
+              <Input name='password' value={props.data.password} id="password" required={true} type="password" placeholder="Enter Password" onChange={handleChange}/>
             </div>
          
           </div>
