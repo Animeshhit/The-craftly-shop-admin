@@ -29,6 +29,7 @@ import { useDispatch, useSelector } from "react-redux";
 import { login } from "../store/Slices/userSlice";
 import { setBanners } from "../store/Slices/bannerSlice";
 import { ReloadIcon } from "@radix-ui/react-icons";
+import { encode } from "blurhash";
 
 const Banners = () => {
   const dispatch = useDispatch();
@@ -54,6 +55,16 @@ const Banners = () => {
 
   const [preview, setPreview] = useState<ArrayBuffer[] | string[] | null>(null);
 
+  const [previewForPhone, setPreviewForPhone] = useState<
+    ArrayBuffer[] | string[] | null
+  >(null);
+
+  const [bannerImageHash, setBannerImageHash] = useState<string | null>(null);
+
+  const [phoneBannerImageHash, setPhoneBannerImageHash] = useState<
+    string | null
+  >(null);
+
   // preview image url ============================================================
 
   // getting banners=======================================================
@@ -75,80 +86,6 @@ const Banners = () => {
       dispatch(setBanners([]));
       console.log(err);
       alert("Network Connection Error");
-    }
-  };
-
-  // ========================creating new banner from server =============================
-  const createNewBannerImage = async () => {
-    try {
-      let token = getToken();
-
-      if (!token) {
-        alert("session expired");
-        dispatch(login(false));
-        return;
-      }
-
-      let { bannerLink }: newBannerDataType = newBannerData;
-
-      if (bannerLink == "" || !bannerLink) {
-        alert("plese prvide bannerLink");
-        return;
-      }
-
-      if (!acceptedFiles.length) {
-        alert("please provide prodcut show case images");
-        return;
-      }
-
-      setCreateBannerBtn(true);
-      // file uploaded ========================================
-      const uploadPreset = import.meta.env.VITE_CLD_UPLOADPRESET;
-
-      const formData = new FormData();
-      formData.append("file", acceptedFiles[0]);
-      formData.append("upload_preset", uploadPreset);
-
-      axios
-        .post(import.meta.env.VITE_CLD_UPLOAD_URL, formData)
-        .then((response) => {
-          let data = {
-            bannerImage: response.data.secure_url,
-            ...newBannerData,
-          };
-
-          // uploading the image link to server
-
-          axios
-            .post(`${import.meta.env.VITE_ADMIN_API_URL}/addnewbanner`, data, {
-              headers: {
-                "Content-Type": "application/json",
-                Authorization: `Bearer ${token}`,
-              },
-            })
-            .then((res) => {
-              let { data } = res;
-              alert(data.message);
-              dispatch(setBanners([...banners, data.banner]));
-              setCreateBannerBtn(false);
-            })
-            .catch((err) => {
-              setCreateBannerBtn(false);
-              console.log(err);
-              alert("something went wrong");
-            });
-        })
-        .catch((err) => {
-          console.log(err);
-          setCreateBannerBtn(false);
-          alert("something went wrong");
-        });
-    } catch (err) {
-      console.log(err);
-      setCreateBannerBtn(false);
-      alert("Network Connection error");
-    } finally {
-      setNewBannerData(initialNewBannerData);
     }
   };
 
@@ -216,10 +153,28 @@ const Banners = () => {
       onDrop,
     });
 
+  const onDropZoneTwo: DropzoneOptions["onDrop"] = useCallback(() => {}, []);
+
+  const {
+    acceptedFiles: FilesForPhone,
+    getInputProps: getInputPropsPhone,
+    getRootProps: getRootPropsPhone,
+    isDragActive: isDragActivePhone,
+  } = useDropzone({
+    accept: {
+      "image/png": [".png"],
+      "image/jpg": [".jpg"],
+      "image/jpeg": [".jpeg"],
+      "image/webp": [".webp"],
+    },
+    onDrop: onDropZoneTwo,
+  });
+
   useEffect(() => {
     if (Array.isArray(acceptedFiles)) {
       if (!acceptedFiles.length) {
         setPreview([]);
+        setBannerImageHash(null);
       }
     }
     acceptedFiles && acceptedFiles.length
@@ -228,8 +183,187 @@ const Banners = () => {
   }, [acceptedFiles]);
 
   useEffect(() => {
+    if (Array.isArray(FilesForPhone)) {
+      if (!FilesForPhone.length) {
+        setPreviewForPhone([]);
+        setPhoneBannerImageHash(null);
+      }
+      FilesForPhone && FilesForPhone.length
+        ? getImageBaseUrl(FilesForPhone, setPreviewForPhone)
+        : "";
+    }
+  }, [FilesForPhone]);
+
+  useEffect(() => {
+    if (Array.isArray(preview)) {
+      if (preview?.length > 0) {
+        const image = new Image();
+        image.src = preview[0] as string;
+        image.onload = async () => {
+          const canvas = document.createElement("canvas");
+          const context = canvas.getContext("2d");
+          canvas.width = image.width;
+          canvas.height = image.height;
+          context?.drawImage(image, 0, 0, image.width, image.height);
+          const imageData = context?.getImageData(
+            0,
+            0,
+            image.width,
+            image.height
+          );
+          console.log(imageData);
+          if (!imageData) return;
+          const hash = await encode(
+            imageData.data,
+            image.width,
+            image.height,
+            4,
+            4
+          );
+          console.log(hash);
+          setBannerImageHash(hash);
+        };
+      }
+    }
+  }, [preview]);
+
+  useEffect(() => {
+    if (Array.isArray(previewForPhone)) {
+      if (previewForPhone?.length > 0) {
+        const image = new Image();
+        image.src = previewForPhone[0] as string;
+        image.onload = async () => {
+          const canvas = document.createElement("canvas");
+          const context = canvas.getContext("2d");
+          canvas.width = image.width;
+          canvas.height = image.height;
+          context?.drawImage(image, 0, 0, image.width, image.height);
+          const imageData = context?.getImageData(
+            0,
+            0,
+            image.width,
+            image.height
+          );
+          console.log(imageData);
+          if (!imageData) return;
+          const hash = await encode(
+            imageData.data,
+            image.width,
+            image.height,
+            4,
+            4
+          );
+          console.log(hash);
+          setPhoneBannerImageHash(hash);
+        };
+      }
+    }
+  }, [previewForPhone]);
+
+  useEffect(() => {
     getBanners();
   }, []);
+
+  // ========================creating new banner from server =============================
+  const createNewBannerImage = async () => {
+    try {
+      let token = getToken();
+
+      if (!token) {
+        alert("session expired");
+        dispatch(login(false));
+        return;
+      }
+
+      let { bannerLink }: newBannerDataType = newBannerData;
+
+      if (bannerLink == "" || !bannerLink) {
+        alert("please Provide BannnerLink");
+        return;
+      }
+
+      if (!acceptedFiles.length) {
+        alert("please Provide Image Image");
+        return;
+      }
+
+      if (!FilesForPhone.length) {
+        alert("please provide banner image for phone");
+        return;
+      }
+
+      setCreateBannerBtn(true);
+      // file uploaded ========================================
+      const uploadPreset = import.meta.env.VITE_CLD_UPLOADPRESET;
+
+      const formData = new FormData();
+      formData.append("file", acceptedFiles[0]);
+      formData.append("upload_preset", uploadPreset);
+
+      const formDataForPhone = new FormData();
+
+      formDataForPhone.append("file", FilesForPhone[0]);
+      formDataForPhone.append("upload_preset", uploadPreset);
+      //for laptop image
+      axios
+        .post(import.meta.env.VITE_CLD_UPLOAD_URL, formData)
+        .then((response) => {
+          //for phone image
+          axios
+            .post(import.meta.env.VITE_CLD_UPLOAD_URL, formDataForPhone)
+            .then((phoneImage) => {
+              let apiData = {
+                bannerImage: response.data.secure_url,
+                bannerImageHash: bannerImageHash,
+                phoneBannerImage: phoneImage.data.secure_url,
+                phoneBannerImageHash: phoneBannerImageHash,
+                ...newBannerData,
+              };
+
+              // uploading the image link to server
+              axios
+                .post(
+                  `${import.meta.env.VITE_ADMIN_API_URL}/addnewbanner`,
+                  apiData,
+                  {
+                    headers: {
+                      "Content-Type": "application/json",
+                      Authorization: `Bearer ${token}`,
+                    },
+                  }
+                )
+                .then((res) => {
+                  let { data } = res;
+                  console.log(data);
+                  alert(data.message);
+                  dispatch(setBanners([...banners, data.banner]));
+                  setCreateBannerBtn(false);
+                })
+                .catch((err) => {
+                  setCreateBannerBtn(false);
+                  console.log(err);
+                  alert("something went wrong");
+                });
+            })
+            .catch((err) => {
+              console.log(err);
+              setCreateBannerBtn(false);
+              alert("something went wrong");
+            });
+        })
+        .catch((err) => {
+          console.log(err);
+          setCreateBannerBtn(false);
+          alert("something went wrong");
+        });
+    } catch (err) {
+      console.log(err);
+      setCreateBannerBtn(false);
+      alert("Network Connection error");
+    } finally {
+      setNewBannerData(initialNewBannerData);
+    }
+  };
 
   return (
     <>
@@ -256,35 +390,72 @@ const Banners = () => {
             </DialogHeader>
             <div className="grid gap-4 py-4">
               {/* dropzone ======================================================= */}
-              <div
-                {...getRootProps()}
-                className="w-full h-[200px] border-2 border-zinc-800 border-dashed rounded-md flex items-center justify-center"
-              >
-                <input {...getInputProps()} />
-                {isDragActive ? (
-                  <p className="text-gray-500">Drop Your Files Here</p>
-                ) : (
-                  <div>
-                    <div className="flex items-center flex-col gap-1">
-                      {preview && preview?.length ? (
-                        preview.map((item) => {
-                          return (
-                            <img
-                              draggable={false}
-                              className="w-full object-contain h-[200px] rounded-md"
-                              src={item as string}
-                            />
-                          );
-                        })
-                      ) : (
-                        <div className="text-center mt-3">
-                          <p>Drag And Drop Files Here 16:9</p>
-                          <Button className="mt-3">Select files</Button>
-                        </div>
-                      )}
+              <div className="flex items-center gap-3 flex-col">
+                <div
+                  {...getRootProps()}
+                  className="w-[350px] h-[140px] border-2 border-zinc-800 border-dashed rounded-md flex items-center justify-center"
+                >
+                  <input {...getInputProps()} />
+                  {isDragActive ? (
+                    <p className="text-gray-500">Drop Your Files Here</p>
+                  ) : (
+                    <div className="w-full h-full">
+                      <div className="w-full h-full flex items-center justify-center">
+                        {preview && preview?.length ? (
+                          preview.map((item) => {
+                            return (
+                              <img
+                                draggable={false}
+                                className="w-full object-contain h-full rounded-md"
+                                src={item as string}
+                              />
+                            );
+                          })
+                        ) : (
+                          <div className="text-center mt-3">
+                            <p className="text-xs">1920 X 600</p>
+                            <Button variant="outline" className="mt-3 text-xs">
+                              Select files
+                            </Button>
+                          </div>
+                        )}
+                      </div>
                     </div>
-                  </div>
-                )}
+                  )}
+                </div>
+
+                <div
+                  {...getRootPropsPhone()}
+                  className="w-[120px] h-[180px] border-2 border-zinc-800 border-dashed rounded-md flex items-center justify-center"
+                >
+                  <input {...getInputPropsPhone()} />
+                  {isDragActivePhone ? (
+                    <p className="text-gray-500">Drop Your Files Here</p>
+                  ) : (
+                    <div className="w-full h-full">
+                      <div className="w-full h-full flex items-center justify-center">
+                        {previewForPhone && previewForPhone?.length ? (
+                          previewForPhone.map((item) => {
+                            return (
+                              <img
+                                draggable={false}
+                                className="w-full object-contain h-[200px] rounded-md"
+                                src={item as string}
+                              />
+                            );
+                          })
+                        ) : (
+                          <div className="text-center mt-3">
+                            <p className="text-xs">375 X 200</p>
+                            <Button variant="outline" className="mt-3 text-xs">
+                              Select files
+                            </Button>
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  )}
+                </div>
               </div>
 
               {/* dropzone================================================================ */}
