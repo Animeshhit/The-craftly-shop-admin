@@ -446,7 +446,7 @@ const Banners = () => {
                           })
                         ) : (
                           <div className="text-center mt-3">
-                            <p className="text-xs">375 X 200</p>
+                            <p className="text-xs">375/400/500 X 350</p>
                             <Button variant="outline" className="mt-3 text-xs">
                               Select files
                             </Button>
