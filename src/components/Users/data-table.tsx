@@ -1,5 +1,5 @@
 //core
-import { useState } from "react";
+import React, { useState } from "react";
 import {
   ColumnDef,
   flexRender,
@@ -19,15 +19,24 @@ import {
   TableRow,
 } from "../ui/table";
 import { Button } from "../ui/button";
+import { Loader2 } from "lucide-react";
 
 interface DataTableProps<TData, TValue> {
   columns: ColumnDef<TData, TValue>[];
   data: TData[];
+  loading: boolean;
+  SetPage: React.Dispatch<React.SetStateAction<number>>;
+  Next: boolean;
+  Prev: boolean;
 }
 
 export function DataTable<TData, TValue>({
   columns,
   data,
+  loading,
+  SetPage,
+  Next,
+  Prev,
 }: DataTableProps<TData, TValue>) {
   const [sorting, setSorting] = useState<SortingState>([]);
 
@@ -99,18 +108,32 @@ export function DataTable<TData, TValue>({
         <Button
           variant="outline"
           size="sm"
-          onClick={() => table.previousPage()}
-          disabled={!table.getCanPreviousPage()}
+          onClick={() => SetPage((value) => value - 1)}
+          disabled={loading || !Prev}
         >
-          Previous
+          {loading ? (
+            <>
+              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+              loading...
+            </>
+          ) : (
+            "Previous"
+          )}
         </Button>
         <Button
           variant="outline"
           size="sm"
-          onClick={() => table.nextPage()}
-          disabled={!table.getCanNextPage()}
+          onClick={() => SetPage((value) => value + 1)}
+          disabled={loading || !Next}
         >
-          Next
+          {loading ? (
+            <>
+              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+              loading...
+            </>
+          ) : (
+            "Next"
+          )}
         </Button>
       </div>
     </div>

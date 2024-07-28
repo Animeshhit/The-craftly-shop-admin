@@ -16,6 +16,7 @@ import Store from "../../store/store";
 import { login } from "../../store/Slices/userSlice";
 import axios from "axios";
 import { setUsers } from "../../store/Slices/usersSlice";
+import { setProgress } from "../../store/Slices/LoadingSlice";
 
 // This type is used to define the shape of our data.
 // You can use a Zod schema here if you want.
@@ -37,6 +38,7 @@ const changeAccess = async (id: string) => {
       Store.dispatch(login(false));
       return;
     }
+    Store.dispatch(setProgress(30));
     axios
       .get(`${import.meta.env.VITE_ADMIN_API_URL}/changeadmin?id=${id}`, {
         headers: {
@@ -57,14 +59,17 @@ const changeAccess = async (id: string) => {
           });
           Store.dispatch(setUsers(updatedUsers));
         }
+        Store.dispatch(setProgress(100));
         alert(data.message);
       })
       .catch((err) => {
         console.log(err);
+        Store.dispatch(setProgress(100));
         alert(err.response.data.message);
       });
   } catch (err) {
     console.log(err);
+    Store.dispatch(setProgress(100));
     alert("Network Connection Error");
   }
 };

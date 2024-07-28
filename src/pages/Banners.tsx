@@ -23,6 +23,8 @@ import { Skeleton } from "../components/ui/skeleton";
 import { useDropzone, DropzoneOptions } from "react-dropzone";
 import getToken from "../helper/token";
 import getImageBaseUrl from "../helper/getImageBaseUrl";
+import { useToast } from "../components/ui/use-toast";
+import { ToastAction } from "../components/ui/toast";
 
 //redux
 import { useDispatch, useSelector } from "react-redux";
@@ -30,11 +32,13 @@ import { login } from "../store/Slices/userSlice";
 import { setBanners } from "../store/Slices/bannerSlice";
 import { ReloadIcon } from "@radix-ui/react-icons";
 import { encode } from "blurhash";
+import { setProgress } from "../store/Slices/LoadingSlice";
 
 const Banners = () => {
   const dispatch = useDispatch();
   const banners = useSelector((s: any) => s.banners);
   const [createBannerBtn, setCreateBannerBtn] = useState<boolean>(false);
+  const { toast } = useToast();
   // new banner
   interface newBannerDataType {
     bannerText: string;
@@ -71,21 +75,43 @@ const Banners = () => {
 
   const getBanners = async () => {
     try {
+      dispatch(setProgress(40));
       axios
         .get(`${import.meta.env.VITE_BASE_API_URL}/banners`)
         .then((res) => {
           let { data } = res;
+          dispatch(setProgress(100));
           dispatch(setBanners(data));
         })
         .catch((err) => {
           dispatch(setBanners([]));
           console.log(err);
-          alert("Something went wrong");
+          dispatch(setProgress(100));
+          toast({
+            variant: "destructive",
+            title: "Error",
+            description: "something went wrong",
+          });
         });
     } catch (err) {
       dispatch(setBanners([]));
       console.log(err);
-      alert("Network Connection Error");
+      dispatch(setProgress(100));
+      toast({
+        variant: "destructive",
+        title: "Network Error",
+        description: "Please Check Your Network Connection",
+        action: (
+          <ToastAction
+            altText="Try again"
+            onClick={() => {
+              location.reload();
+            }}
+          >
+            Try again
+          </ToastAction>
+        ),
+      });
     }
   };
 
@@ -97,11 +123,26 @@ const Banners = () => {
     try {
       let token = getToken();
       if (!token) {
-        alert("Session Expired");
+        toast({
+          variant: "destructive",
+          title: "Session Expired",
+          description: "Please Login again",
+          action: (
+            <ToastAction
+              altText="Try again"
+              onClick={() => {
+                location.reload();
+              }}
+            >
+              Try again
+            </ToastAction>
+          ),
+        });
         dispatch(login(false));
         return;
       }
       setdtbtn(true);
+      dispatch(setProgress(30));
       axios
         .delete(
           `${
@@ -120,17 +161,38 @@ const Banners = () => {
           });
           dispatch(setBanners(updatedBanners));
           setdtbtn(false);
-          alert(data.message);
+          dispatch(setProgress(100));
+          toast({ title: data.message });
         })
         .catch((err) => {
           console.log(err);
           setdtbtn(false);
-          alert("something went wrong");
+          toast({
+            variant: "destructive",
+            title: "Error",
+            description: "something went wrong",
+          });
+          dispatch(setProgress(100));
         });
     } catch (err) {
       console.log(err);
       setdtbtn(false);
-      alert("Network connection error");
+      toast({
+        variant: "destructive",
+        title: "Network Error",
+        description: "Please Check Your Network Connection",
+        action: (
+          <ToastAction
+            altText="Try again"
+            onClick={() => {
+              location.reload();
+            }}
+          >
+            Try again
+          </ToastAction>
+        ),
+      });
+      dispatch(setProgress(100));
     }
   };
   // deleting banner end ================================================
@@ -171,6 +233,7 @@ const Banners = () => {
   });
 
   useEffect(() => {
+    dispatch(setProgress(50));
     if (Array.isArray(acceptedFiles)) {
       if (!acceptedFiles.length) {
         setPreview([]);
@@ -180,9 +243,11 @@ const Banners = () => {
     acceptedFiles && acceptedFiles.length
       ? getImageBaseUrl(acceptedFiles, setPreview)
       : "";
+    dispatch(setProgress(100));
   }, [acceptedFiles]);
 
   useEffect(() => {
+    dispatch(setProgress(50));
     if (Array.isArray(FilesForPhone)) {
       if (!FilesForPhone.length) {
         setPreviewForPhone([]);
@@ -192,9 +257,11 @@ const Banners = () => {
         ? getImageBaseUrl(FilesForPhone, setPreviewForPhone)
         : "";
     }
+    dispatch(setProgress(100));
   }, [FilesForPhone]);
 
   useEffect(() => {
+    dispatch(setProgress(50));
     if (Array.isArray(preview)) {
       if (preview?.length > 0) {
         const image = new Image();
@@ -225,9 +292,11 @@ const Banners = () => {
         };
       }
     }
+    dispatch(setProgress(100));
   }, [preview]);
 
   useEffect(() => {
+    dispatch(setProgress(50));
     if (Array.isArray(previewForPhone)) {
       if (previewForPhone?.length > 0) {
         const image = new Image();
@@ -258,6 +327,7 @@ const Banners = () => {
         };
       }
     }
+    dispatch(setProgress(100));
   }, [previewForPhone]);
 
   useEffect(() => {
@@ -270,7 +340,21 @@ const Banners = () => {
       let token = getToken();
 
       if (!token) {
-        alert("session expired");
+        toast({
+          variant: "destructive",
+          title: "Session Expired",
+          description: "Please Login again",
+          action: (
+            <ToastAction
+              altText="Try again"
+              onClick={() => {
+                location.reload();
+              }}
+            >
+              Try again
+            </ToastAction>
+          ),
+        });
         dispatch(login(false));
         return;
       }
@@ -278,17 +362,29 @@ const Banners = () => {
       let { bannerLink }: newBannerDataType = newBannerData;
 
       if (bannerLink == "" || !bannerLink) {
-        alert("please Provide BannnerLink");
+        toast({
+          variant: "destructive",
+          title: "Validation Erorr",
+          description: "please Provide BannnerLink",
+        });
         return;
       }
 
       if (!acceptedFiles.length) {
-        alert("please Provide Image Image");
+        toast({
+          variant: "destructive",
+          title: "Validation Erorr",
+          description: "please Provide BannerImage",
+        });
         return;
       }
 
       if (!FilesForPhone.length) {
-        alert("please provide banner image for phone");
+        toast({
+          variant: "destructive",
+          title: "Validation Erorr",
+          description: "please Provide BannerImage For Phone",
+        });
         return;
       }
 
@@ -305,10 +401,12 @@ const Banners = () => {
       formDataForPhone.append("file", FilesForPhone[0]);
       formDataForPhone.append("upload_preset", uploadPreset);
       //for laptop image
+      dispatch(setProgress(30));
       axios
         .post(import.meta.env.VITE_CLD_UPLOAD_URL, formData)
         .then((response) => {
           //for phone image
+          dispatch(setProgress(50));
           axios
             .post(import.meta.env.VITE_CLD_UPLOAD_URL, formDataForPhone)
             .then((phoneImage) => {
@@ -335,31 +433,62 @@ const Banners = () => {
                 .then((res) => {
                   let { data } = res;
                   console.log(data);
-                  alert(data.message);
+                  toast({ title: data.message });
                   dispatch(setBanners([...banners, data.banner]));
+                  dispatch(setProgress(100));
                   setCreateBannerBtn(false);
                 })
                 .catch((err) => {
                   setCreateBannerBtn(false);
+                  dispatch(setProgress(100));
                   console.log(err);
-                  alert("something went wrong");
+                  toast({
+                    variant: "destructive",
+                    title: "Error",
+                    description: "something went wrong",
+                  });
                 });
             })
             .catch((err) => {
               console.log(err);
+              dispatch(setProgress(100));
               setCreateBannerBtn(false);
-              alert("something went wrong");
+              toast({
+                variant: "destructive",
+                title: "Error",
+                description: "something went wrong",
+              });
             });
         })
         .catch((err) => {
           console.log(err);
           setCreateBannerBtn(false);
-          alert("something went wrong");
+          dispatch(setProgress(100));
+          toast({
+            variant: "destructive",
+            title: "Error",
+            description: "something went wrong",
+          });
         });
     } catch (err) {
       console.log(err);
       setCreateBannerBtn(false);
-      alert("Network Connection error");
+      toast({
+        variant: "destructive",
+        title: "Network Error",
+        description: "Please Check Your Network Connection",
+        action: (
+          <ToastAction
+            altText="Try again"
+            onClick={() => {
+              location.reload();
+            }}
+          >
+            Try again
+          </ToastAction>
+        ),
+      });
+      dispatch(setProgress(100));
     } finally {
       setNewBannerData(initialNewBannerData);
     }

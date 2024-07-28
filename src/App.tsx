@@ -5,7 +5,6 @@ import { useEffect, useState } from "react";
 //others
 // import Navbar from "./components/Navbar"
 import Login from "./pages/Login";
-import Home from "./pages/Home";
 import axios from "axios";
 import { userData } from "./types/userDataTypes";
 import { LoginType } from "./types/LoginFunctionType";
@@ -26,16 +25,23 @@ import CupponCode from "./pages/CupponCode";
 import getToken from "./helper/token";
 import LoadingBar from "react-top-loading-bar";
 import EditProduct from "./pages/EditProduct";
+import { Toaster } from "./components/ui/toaster";
+import { useToast } from "./components/ui/use-toast";
+import { ToastAction } from "./components/ui/toast";
+import Dashboard from "./pages/Dashboard";
 
 //redux
 import { useDispatch, useSelector } from "react-redux";
 import { login } from "./store/Slices/userSlice";
+import { setProgress } from "./store/Slices/LoadingSlice";
 
 const App = () => {
   const navigateTo = useNavigate();
   const dispatch = useDispatch();
 
-  const [progress, setProgress] = useState<number>(0);
+  const loading = useSelector((state: any) => state.loading);
+
+  const { toast } = useToast();
 
   // login system ====================================
 
@@ -60,6 +66,7 @@ const App = () => {
   const LoginFunction: LoginType = async () => {
     try {
       setButton(true);
+      dispatch(setProgress(30));
       axios
         .post(`${import.meta.env.VITE_BASE_API_URL}/auth/login`, data, {
           headers: {
@@ -71,34 +78,69 @@ const App = () => {
           if (data.user.isAdmin) {
             setTokenWithExpiration(data.token, 1200000);
             dispatch(login(true));
-            alert(data.message);
+            toast({
+              title: "Login successfully ✅",
+              description: "Process Completed",
+            });
             setData(initialData);
             setButton(false);
+
             navigateTo("/");
           } else {
             dispatch(login(false));
-            alert("You Are Not An Admin");
+            toast({
+              variant: "destructive",
+              title: "Login Error ❌",
+              description: "you are not and admin",
+            });
             setData(initialData);
             setButton(false);
           }
+          dispatch(setProgress(100));
         })
         .catch((err) => {
           if (err.request.status == 401) {
-            alert(err.response.data.message);
+            toast({
+              variant: "destructive",
+              description: err.response.data.message,
+            });
           } else if (err.request.status == 404) {
-            alert(err.response.data.message);
+            toast({
+              variant: "destructive",
+              description: err.response.data.message,
+            });
           } else {
             console.log(err);
-            alert("something went wrong");
+            toast({
+              variant: "destructive",
+              title: "Error",
+              description: "something went wrong",
+            });
           }
           dispatch(login(false));
           setButton(false);
+          dispatch(setProgress(100));
         });
     } catch (err) {
       console.log(err);
-      alert("Network connection error");
+      toast({
+        variant: "destructive",
+        title: "Network Error",
+        description: "Please Check Your Network Connection",
+        action: (
+          <ToastAction
+            altText="Try again"
+            onClick={() => {
+              location.reload();
+            }}
+          >
+            Try again
+          </ToastAction>
+        ),
+      });
       dispatch(login(false));
       setButton(false);
+      dispatch(setProgress(100));
     }
   };
 
@@ -113,6 +155,7 @@ const App = () => {
       }
 
       let { token }: TokenData = JSON.parse(tokenData);
+      dispatch(setProgress(30));
 
       axios
         .get(`${import.meta.env.VITE_BASE_API_URL}/auth/login`, {
@@ -127,16 +170,37 @@ const App = () => {
           } else {
             dispatch(login(false));
           }
+          dispatch(setProgress(100));
         })
         .catch((err) => {
           console.log(err);
-          alert("something went wrong");
+          toast({
+            variant: "destructive",
+            title: "Error",
+            description: "something went wrong",
+          });
           dispatch(login(false));
+          dispatch(setProgress(100));
         });
     } catch (err) {
       console.log(err);
-      alert("Network connection error");
+      toast({
+        variant: "destructive",
+        title: "Network Error",
+        description: "Please Check Your Network Connection",
+        action: (
+          <ToastAction
+            altText="Try again"
+            onClick={() => {
+              location.reload();
+            }}
+          >
+            Try again
+          </ToastAction>
+        ),
+      });
       dispatch(login(false));
+      dispatch(setProgress(100));
     }
   };
 
@@ -153,9 +217,10 @@ const App = () => {
     <>
       <LoadingBar
         color="#f11946"
-        progress={progress}
-        onLoaderFinished={() => setProgress(0)}
+        progress={loading}
+        onLoaderFinished={() => dispatch(setProgress(0))}
       />
+      <Toaster />
       {user == null ? (
         <Skeleton className="w-[300px] fixed top-0 left-0 bottom-0 bg-zinc-800 rounded-none" />
       ) : user ? (
@@ -172,7 +237,7 @@ const App = () => {
               {user == null ? (
                 <LoadingPage />
               ) : user ? (
-                <Home />
+                <Dashboard />
               ) : (
                 <Navigate to="/login" replace={true} />
               )}
@@ -244,7 +309,7 @@ const App = () => {
                   <ProductsLoadingPage />
                 </div>
               ) : user ? (
-                <AddProduct setProgress={setProgress} />
+                <AddProduct />
               ) : (
                 <Navigate to="/login" replace={true} />
               )}
@@ -262,7 +327,7 @@ const App = () => {
                   <ProductsLoadingPage />
                 </div>
               ) : user ? (
-                <EditProduct setProgress={setProgress} />
+                <EditProduct />
               ) : (
                 <Navigate to="/login" replace={true} />
               )}

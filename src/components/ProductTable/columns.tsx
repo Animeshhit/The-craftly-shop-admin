@@ -21,6 +21,7 @@ import axios from "axios";
 import { login } from "../../store/Slices/userSlice";
 import { setProducts } from "../../store/Slices/productsSlice";
 import Store from "../../store/store";
+import { setProgress } from "../../store/Slices/LoadingSlice";
 
 // This type is used to define the shape of our data.
 // You can use a Zod schema here if you want.
@@ -37,31 +38,33 @@ const deleteProduct = async (id: string, products: any) => {
   try {
     let token = getToken();
     if (!token) {
-      alert("Session Expired");
+      alert("Session Expired 🤞");
       Store.dispatch(login(false));
       return;
     }
+    Store.dispatch(setProgress(30));
     axios
       .delete(`${import.meta.env.VITE_ADMIN_API_URL}/deleteaproduct?id=${id}`, {
         headers: {
           Authorization: `Bearer ${token}`,
         },
       })
-      .then((res) => {
-        let { data } = res;
+      .then((_) => {
         let updatedProducts = products.filter((p: any) => {
           return p._id !== id;
         });
+        Store.dispatch(setProgress(100));
         Store.dispatch(setProducts(updatedProducts));
-        alert(data.message);
       })
       .catch((err) => {
         console.log(err);
-        alert("something went wrong");
+        Store.dispatch(setProgress(100));
+        alert("Something Went Wrong");
       });
   } catch (err) {
     console.log(err);
-    alert("Network connection error");
+    Store.dispatch(setProgress(100));
+    alert("Network Connection Error");
   }
 };
 

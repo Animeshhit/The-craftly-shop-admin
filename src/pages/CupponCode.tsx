@@ -1,5 +1,6 @@
+import Home from "./Home";
 const CupponCode = () => {
-  return <div>CupponCode</div>;
+  return <Home />;
 };
 
 export default CupponCode;

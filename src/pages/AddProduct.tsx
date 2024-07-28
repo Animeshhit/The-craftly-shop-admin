@@ -25,21 +25,21 @@ import { getCategories } from "../helper/categoriesHelper/ctg";
 import { NewProductType } from "../types/NewProductType";
 import getToken from "../helper/token";
 import { ReloadIcon } from "@radix-ui/react-icons";
+import { useToast } from "../components/ui/use-toast";
 // react dropzone
 import { useDropzone, DropzoneOptions } from "react-dropzone";
 
 //redux
 import { useDispatch, useSelector } from "react-redux";
 import { login } from "../store/Slices/userSlice";
+import { setProgress } from "../store/Slices/LoadingSlice";
 import axios from "axios";
+import { ToastAction } from "../components/ui/toast";
 
-const AddProduct = ({
-  setProgress,
-}: {
-  setProgress: React.Dispatch<React.SetStateAction<number>>;
-}) => {
+const AddProduct = () => {
   // ctg
   const dispatch = useDispatch();
+  const { toast } = useToast();
   let ctg = useSelector((s: any) => s.ctg);
   const [mainImageUrlPreview, setMainImageUrlPreview] = useState<
     string | undefined
@@ -125,7 +125,21 @@ const AddProduct = ({
     let token = getToken();
 
     if (!token) {
-      alert("Session Expired");
+      toast({
+        variant: "destructive",
+        title: "Session Expired",
+        description: "Please Login again",
+        action: (
+          <ToastAction
+            altText="Try again"
+            onClick={() => {
+              location.reload();
+            }}
+          >
+            Try again
+          </ToastAction>
+        ),
+      });
       dispatch(login(false));
       return;
     }
@@ -142,7 +156,11 @@ const AddProduct = ({
     }: NewProductType = newProductData;
     // name
     if (name.value === "" || name.value == null || name.value == undefined) {
-      alert("Please Provide Product Name Description");
+      toast({
+        variant: "destructive",
+        title: "Validation Erorr",
+        description: "Please Provide Product Name Description",
+      });
       setNewProductData({
         ...newProductData,
         name: { value: "", error: true },
@@ -151,7 +169,11 @@ const AddProduct = ({
     }
     //stock
     if (stock.value === "" || stock.value == null || stock.value == undefined) {
-      alert("Please Provide Product stock Number");
+      toast({
+        variant: "destructive",
+        title: "Validation Erorr",
+        description: "Please Provide Product stock Number",
+      });
       setNewProductData({
         ...newProductData,
         stock: { value: undefined, error: true },
@@ -164,7 +186,11 @@ const AddProduct = ({
       productUniqueId.value == null ||
       productUniqueId.value == undefined
     ) {
-      alert("Please Provide product Unique ID");
+      toast({
+        variant: "destructive",
+        title: "Validation Erorr",
+        description: "Please Provide product Unique ID",
+      });
       setNewProductData({
         ...newProductData,
         productUniqueId: { value: "", error: true },
@@ -177,7 +203,11 @@ const AddProduct = ({
       basePrice.value == null ||
       basePrice.value == undefined
     ) {
-      alert("Please Provide Product Base Price");
+      toast({
+        variant: "destructive",
+        title: "Validation Erorr",
+        description: "Please Provide Product Base Price",
+      });
       setNewProductData({
         ...newProductData,
         basePrice: { value: undefined, error: true },
@@ -190,7 +220,11 @@ const AddProduct = ({
       discountedPrice.value == null ||
       discountedPrice.value == undefined
     ) {
-      alert("Please Provide Product Discounted Price");
+      toast({
+        variant: "destructive",
+        title: "Validation Erorr",
+        description: "Please Provide Product Discounted Price",
+      });
       setNewProductData({
         ...newProductData,
         discountedPrice: { value: undefined, error: true },
@@ -203,7 +237,11 @@ const AddProduct = ({
       categories.value == null ||
       categories.value == undefined
     ) {
-      alert("Please Provide Product categories");
+      toast({
+        variant: "destructive",
+        title: "Validation Erorr",
+        description: "Please select categories",
+      });
       setNewProductData({
         ...newProductData,
         categories: { value: "", error: true },
@@ -216,7 +254,11 @@ const AddProduct = ({
       mainImage.value == null ||
       mainImage.value == undefined
     ) {
-      alert("Please Provide Product mainImage URL in 4:4 ratio");
+      toast({
+        variant: "destructive",
+        title: "Validation Erorr",
+        description: "Please Provide Product mainImage URL in 4:4 ratio",
+      });
       setNewProductData({
         ...newProductData,
         mainImage: { value: "", error: true },
@@ -224,15 +266,23 @@ const AddProduct = ({
       return;
     }
     if (markdown == "" || markdown == null || markdown == undefined) {
-      alert("Please Provide Product Description");
+      toast({
+        variant: "destructive",
+        title: "Validation Erorr",
+        description: "Please Provide Product Description",
+      });
       return;
     }
     if (!acceptedFiles.length) {
-      alert("please provide prodcut show case images");
+      toast({
+        variant: "destructive",
+        title: "Validation Erorr",
+        description: "please provide prodcut show case images",
+      });
       return;
     }
     setPublishBtn(true);
-    setProgress(30);
+    dispatch(setProgress(30));
     // file uploaded ========================================
     const uploadPreset = import.meta.env.VITE_CLD_UPLOADPRESET;
 
@@ -245,9 +295,9 @@ const AddProduct = ({
         .post(import.meta.env.VITE_CLD_UPLOAD_URL, formData)
         .then((response) => response.data);
     });
-    setProgress(50);
+    dispatch(setProgress(50));
     const uploadedFilesData = await Promise.all(uploaders);
-    setProgress(80);
+    dispatch(setProgress(80));
     // file uploaded end ========================================
     const uploadedUrls = uploadedFilesData.map(
       (uploaded) => uploaded.secure_url
@@ -276,27 +326,46 @@ const AddProduct = ({
         })
         .then((res) => {
           let { data } = res;
-          alert(data.message);
+          toast({ title: data.message });
           setNewProductData(initialNewProduct);
           setPublishBtn(false);
           console.log(data);
-          setProgress(100);
+          dispatch(setProgress(100));
         })
         .catch((err) => {
           console.log(err);
           setPublishBtn(false);
-          setProgress(100);
-          alert("something went wrong");
+          dispatch(setProgress(100));
+          toast({
+            variant: "destructive",
+            title: "Error",
+            description: "something went wrong",
+          });
         });
     } catch (err) {
       console.log(err);
       setPublishBtn(false);
-      setProgress(100);
-      alert("Network connection error");
+      dispatch(setProgress(100));
+      toast({
+        variant: "destructive",
+        title: "Network Error",
+        description: "Please Check Your Network Connection",
+        action: (
+          <ToastAction
+            altText="Try again"
+            onClick={() => {
+              location.reload();
+            }}
+          >
+            Try again
+          </ToastAction>
+        ),
+      });
     }
   };
 
   useEffect(() => {
+    dispatch(setProgress(50));
     if (Array.isArray(acceptedFiles)) {
       if (!acceptedFiles.length) {
         setPreview([]);
@@ -306,6 +375,7 @@ const AddProduct = ({
       Object.keys(acceptedFiles).forEach(async function (_, index) {
         getImageBaseUrl(acceptedFiles[index]);
       });
+    dispatch(setProgress(100));
   }, [acceptedFiles]);
 
   useEffect(() => {

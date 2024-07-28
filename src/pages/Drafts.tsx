@@ -1,5 +1,6 @@
+import Home from "./Home";
 const Drafts = () => {
-  return <div>Drafts</div>;
+  return <Home />;
 };
 
 export default Drafts;

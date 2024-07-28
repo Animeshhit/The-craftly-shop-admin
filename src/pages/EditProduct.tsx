@@ -1,5 +1,5 @@
 //core
-import React, { useState, useCallback, useEffect } from "react";
+import { useState, useCallback, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 
 //others
@@ -25,24 +25,24 @@ import { Checkbox } from "../components/ui/checkbox";
 import { getCategories } from "../helper/categoriesHelper/ctg";
 import getToken from "../helper/token";
 import { ReloadIcon } from "@radix-ui/react-icons";
+import { useToast } from "../components/ui/use-toast";
 // react dropzone
 import { useDropzone, DropzoneOptions } from "react-dropzone";
 
 //redux
 import { useDispatch, useSelector } from "react-redux";
 import { login } from "../store/Slices/userSlice";
+import { setProgress } from "../store/Slices/LoadingSlice";
 import axios from "axios";
+import { ToastAction } from "../components/ui/toast";
 
-const EditProduct = ({
-  setProgress,
-}: {
-  setProgress: React.Dispatch<React.SetStateAction<number>>;
-}) => {
+const EditProduct = () => {
   let { id } = useParams();
   const navigate = useNavigate();
 
   // ctg
   const dispatch = useDispatch();
+  const { toast } = useToast();
   let ctg = useSelector((s: any) => s.ctg);
   const [publicBtn, setPublishBtn] = useState<boolean>(false);
   const [productToEdit, setProductToEdit] = useState<boolean>(false);
@@ -100,189 +100,12 @@ const EditProduct = ({
     string | undefined
   >(undefined);
 
-  // const createNewProduct = async () => {
-  //   let token = getToken();
-
-  //   if (!token) {
-  //     alert("Session Expired");
-  //     dispatch(login(false));
-  //     return;
-  //   }
-  //   let {
-  //     name,
-  //     stock,
-  //     productUniqueId,
-  //     basePrice,
-  //     discountedPrice,
-  //     categories,
-  //     mainImage,
-  //     isBestSeller,
-  //     isFeatured,
-  //   }: NewProductType = newProductData;
-  //   // name
-  //   if (name.value === "" || name.value == null || name.value == undefined) {
-  //     alert("Please Provide Product Name Description");
-  //     setNewProductData({
-  //       ...newProductData,
-  //       name: { value: "", error: true },
-  //     });
-  //     return;
-  //   }
-  //   //stock
-  //   if (stock.value === "" || stock.value == null || stock.value == undefined) {
-  //     alert("Please Provide Product stock Number");
-  //     setNewProductData({
-  //       ...newProductData,
-  //       stock: { value: undefined, error: true },
-  //     });
-  //     return;
-  //   }
-  //   // productUniqueId
-  //   if (
-  //     productUniqueId.value === "" ||
-  //     productUniqueId.value == null ||
-  //     productUniqueId.value == undefined
-  //   ) {
-  //     alert("Please Provide product Unique ID");
-  //     setNewProductData({
-  //       ...newProductData,
-  //       productUniqueId: { value: "", error: true },
-  //     });
-  //     return;
-  //   }
-  //   // basePrice
-  //   if (
-  //     basePrice.value === "" ||
-  //     basePrice.value == null ||
-  //     basePrice.value == undefined
-  //   ) {
-  //     alert("Please Provide Product Base Price");
-  //     setNewProductData({
-  //       ...newProductData,
-  //       basePrice: { value: undefined, error: true },
-  //     });
-  //     return;
-  //   }
-  //   // discountedPrice
-  //   if (
-  //     discountedPrice.value === "" ||
-  //     discountedPrice.value == null ||
-  //     discountedPrice.value == undefined
-  //   ) {
-  //     alert("Please Provide Product Discounted Price");
-  //     setNewProductData({
-  //       ...newProductData,
-  //       discountedPrice: { value: undefined, error: true },
-  //     });
-  //     return;
-  //   }
-  //   // categories
-  //   if (
-  //     categories.value === "" ||
-  //     categories.value == null ||
-  //     categories.value == undefined
-  //   ) {
-  //     alert("Please Provide Product categories");
-  //     setNewProductData({
-  //       ...newProductData,
-  //       categories: { value: "", error: true },
-  //     });
-  //     return;
-  //   }
-  //   // mainImage
-  //   if (
-  //     mainImage.value === "" ||
-  //     mainImage.value == null ||
-  //     mainImage.value == undefined
-  //   ) {
-  //     alert("Please Provide Product mainImage URL in 4:4 ratio");
-  //     setNewProductData({
-  //       ...newProductData,
-  //       mainImage: { value: "", error: true },
-  //     });
-  //     return;
-  //   }
-  //   if (markdown == "" || markdown == null || markdown == undefined) {
-  //     alert("Please Provide Product Description");
-  //     return;
-  //   }
-  //   if (!acceptedFiles.length) {
-  //     alert("please provide prodcut show case images");
-  //     return;
-  //   }
-  //   setPublishBtn(true);
-  //   setProgress(30);
-  //   // file uploaded ========================================
-  //   const uploadPreset = import.meta.env.VITE_CLD_UPLOADPRESET;
-
-  //   const uploaders = Array.from(acceptedFiles).map((file) => {
-  //     const formData = new FormData();
-  //     formData.append("file", file);
-  //     formData.append("upload_preset", uploadPreset);
-
-  //     return axios
-  //       .post(import.meta.env.VITE_CLD_UPLOAD_URL, formData)
-  //       .then((response) => response.data);
-  //   });
-  //   setProgress(50);
-  //   const uploadedFilesData = await Promise.all(uploaders);
-  //   setProgress(80);
-  //   // file uploaded end ========================================
-  //   const uploadedUrls = uploadedFilesData.map(
-  //     (uploaded) => uploaded.secure_url
-  //   );
-
-  //   let DATA = {
-  //     name: name.value,
-  //     description: markdown,
-  //     price: basePrice.value,
-  //     discount: discountedPrice.value,
-  //     productImage: mainImage.value,
-  //     productImages: uploadedUrls,
-  //     catagories: categories.value,
-  //     productUniqueId: productUniqueId.value,
-  //     stock: stock.value,
-  //     isFeatured,
-  //     isBestSeller,
-  //   };
-  //   try {
-  //     axios
-  //       .post(`${import.meta.env.VITE_ADMIN_API_URL}/createnewproduct`, DATA, {
-  //         headers: {
-  //           "Content-Type": "application/json",
-  //           Authorization: `Bearer ${token}`,
-  //         },
-  //       })
-  //       .then((res) => {
-  //         let { data } = res;
-  //         alert(data.message);
-  //         setNewProductData(initialNewProduct);
-  //         setPublishBtn(false);
-  //         console.log(data);
-  //         setProgress(100);
-  //       })
-  //       .catch((err) => {
-  //         console.log(err);
-  //         setPublishBtn(false);
-  //         setProgress(100);
-  //         alert("something went wrong");
-  //       });
-  //   } catch (err) {
-  //     console.log(err);
-  //     setPublishBtn(false);
-  //     setProgress(100);
-  //     alert("Network connection error");
-  //   }
-  // };
-
-  // const [combobox, setCombox] = useState<string>("");
-
   // =====================================Edit Work =============================
   const getAProductToEdit = async (productId: string) => {
     try {
-      setProgress(30);
+      dispatch(setProgress(30));
       getCategories();
-      setProgress(50);
+      dispatch(setProgress(50));
       axios
         .get(`${import.meta.env.VITE_BASE_API_URL}/product?id=${productId}`)
         .then((res) => {
@@ -300,18 +123,18 @@ const EditProduct = ({
           setMainImageUrl(product.productImage);
           setMarkDown(product.description);
           setProductToEdit(true);
-          setProgress(100);
+          dispatch(setProgress(100));
         })
         .catch((err) => {
           console.log(err);
           alert("something went wrong");
-          setProgress(100);
+          dispatch(setProgress(100));
           navigate("/products", { replace: true });
         });
     } catch (err) {
       console.log(err);
       alert("Network Connection Error");
-      setProgress(100);
+      dispatch(setProgress(100));
       navigate("/products", { replace: true });
     }
   };
@@ -321,31 +144,61 @@ const EditProduct = ({
       let token = getToken();
 
       if (!token) {
-        alert("Session Expired");
+        toast({
+          variant: "destructive",
+          title: "Session Expired",
+          description: "Please Login again",
+          action: (
+            <ToastAction
+              altText="Try again"
+              onClick={() => {
+                location.reload();
+              }}
+            >
+              Try again
+            </ToastAction>
+          ),
+        });
         dispatch(login(false));
         return;
       }
 
       // name
       if (name === "" || name == null || name == undefined) {
-        alert("Please Provide Product Name Description");
+        toast({
+          variant: "destructive",
+          title: "Validation Erorr",
+          description: "Please Provide Product Name Description",
+        });
         return;
       }
       //description
       if (markdown == "" || markdown == null || markdown == undefined) {
-        alert("Please Provide Product Description");
+        toast({
+          variant: "destructive",
+          title: "Validation Erorr",
+          description: "Please Provide Product Description",
+        });
         return;
       }
 
       // basePrice
       if (basePrice === "" || basePrice == null || basePrice == undefined) {
-        alert("Please Provide Product Base Price");
+        toast({
+          variant: "destructive",
+          title: "Validation Erorr",
+          description: "Please Provide Product Base Price",
+        });
         return;
       }
 
       // discountedPrice
       if (discount === "" || discount == null || discount == undefined) {
-        alert("Please Provide Product Discounted Price");
+        toast({
+          variant: "destructive",
+          title: "Validation Erorr",
+          description: "Please Provide Product Discounted Price",
+        });
         return;
       }
 
@@ -355,13 +208,21 @@ const EditProduct = ({
         mainImageUrl == null ||
         mainImageUrl == undefined
       ) {
-        alert("Please Provide Product mainImage URL in 4:4 ratio");
+        toast({
+          variant: "destructive",
+          title: "Validation Erorr",
+          description: "Please Provide Product mainImage URL in 4:4 ratio",
+        });
         return;
       }
 
       // categories
       if (ctgValue === "" || ctgValue == null || ctgValue == undefined) {
-        alert("Please Provide Product categories");
+        toast({
+          variant: "destructive",
+          title: "Validation Erorr",
+          description: "Please select categories",
+        });
         return;
       }
       // productUniqueId
@@ -370,11 +231,15 @@ const EditProduct = ({
         productUniqueId == null ||
         productUniqueId == undefined
       ) {
-        alert("Please Provide product Unique ID");
+        toast({
+          variant: "destructive",
+          title: "Validation Erorr",
+          description: "Please Provide product Unique ID",
+        });
         return;
       }
       setPublishBtn(true);
-      setProgress(30);
+      dispatch(setProgress(30));
       // file uploaded ========================================
       const uploadPreset = import.meta.env.VITE_CLD_UPLOADPRESET;
 
@@ -390,9 +255,9 @@ const EditProduct = ({
             .post(import.meta.env.VITE_CLD_UPLOAD_URL, formData)
             .then((response) => response.data);
         });
-        setProgress(40);
+        dispatch(setProgress(40));
         const uploadedFilesData = await Promise.all(uploaders);
-        setProgress(80);
+        dispatch(setProgress(80));
         // file uploaded end ========================================
         uploadedUrls = uploadedFilesData.map((uploaded) => uploaded.secure_url);
       }
@@ -435,25 +300,44 @@ const EditProduct = ({
           setIsBestSellerProduct(product.isBestSeller);
           setMainImageUrl(product.productImage);
           setMarkDown(product.description);
-          setProgress(100);
+          dispatch(setProgress(100));
           setPublishBtn(false);
-          alert(data.message);
+          toast({ title: data.message });
         })
         .catch((err) => {
           console.log(err);
           setPublishBtn(false);
-          setProgress(100);
-          alert("something went wrong");
+          dispatch(setProgress(100));
+          toast({
+            variant: "destructive",
+            title: "Error",
+            description: "something went wrong",
+          });
         });
     } catch (err) {
       console.log(err);
       setPublishBtn(false);
-      setProgress(100);
-      alert("Network Connection Error");
+      dispatch(setProgress(100));
+      toast({
+        variant: "destructive",
+        title: "Network Error",
+        description: "Please Check Your Network Connection",
+        action: (
+          <ToastAction
+            altText="Try again"
+            onClick={() => {
+              location.reload();
+            }}
+          >
+            Try again
+          </ToastAction>
+        ),
+      });
     }
   };
 
   useEffect(() => {
+    dispatch(setProgress(50));
     if (Array.isArray(acceptedFiles)) {
       if (!acceptedFiles.length) {
         setPreview([]);
@@ -463,6 +347,7 @@ const EditProduct = ({
       Object.keys(acceptedFiles).forEach(async function (_, index) {
         getImageBaseUrl(acceptedFiles[index]);
       });
+    dispatch(setProgress(100));
   }, [acceptedFiles]);
 
   useEffect(() => {
