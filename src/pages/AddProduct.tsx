@@ -1,7 +1,6 @@
 //core
 import { useState, useCallback, useEffect } from "react";
 
-
 //others
 import { Button } from "../components/ui/button";
 import {
@@ -37,6 +36,13 @@ import { setProgress } from "../store/Slices/LoadingSlice";
 import axios from "axios";
 import { ToastAction } from "../components/ui/toast";
 
+import { CircleX } from "lucide-react";
+
+const constants = {
+  public: "UPLOAD",
+  private: "DRAFT",
+};
+
 const AddProduct = () => {
   // ctg
   const dispatch = useDispatch();
@@ -46,6 +52,7 @@ const AddProduct = () => {
     string | undefined
   >(undefined);
   const [publicBtn, setPublishBtn] = useState<boolean>(false);
+  const [draftBtn, setDraftBtn] = useState<boolean>(false);
   // react dropzone ====================================
 
   // ===========================preview ======================================
@@ -117,12 +124,26 @@ const AddProduct = () => {
     isFeatured: false,
     isBestSeller: false,
   };
+  const [tags, setTags] = useState<string>("");
+  const [tagsMain, setTagsMain] = useState<string[] | []>([]);
+
+  const handleTagChange = (e: any) => {
+    const value = e.target.value;
+    const words = value.split(" ");
+    setTags(value);
+
+    if (value.endsWith(" ")) {
+      setTagsMain([...tagsMain, words[words.length - 2]]);
+      setTags("");
+    }
+  };
+
   const [newProductData, setNewProductData] =
     useState<NewProductType>(initialNewProduct);
   const [markdown, setMarkDown] = useState<string>("");
   // const [uploadedImages, setUploadedImages] = useState<string[] | []>([]);
 
-  const createNewProduct = async () => {
+  const createNewProduct = async (actionType: string) => {
     let token = getToken();
 
     if (!token) {
@@ -283,6 +304,7 @@ const AddProduct = () => {
       return;
     }
     setPublishBtn(true);
+    setDraftBtn(true);
     dispatch(setProgress(30));
     // file uploaded ========================================
     const uploadPreset = import.meta.env.VITE_CLD_UPLOADPRESET;
@@ -314,28 +336,40 @@ const AddProduct = () => {
       catagories: categories.value,
       productUniqueId: productUniqueId.value,
       stock: stock.value,
+      tags: tagsMain,
       isFeatured,
       isBestSeller,
     };
     try {
       axios
-        .post(`${import.meta.env.VITE_ADMIN_API_URL}/createnewproduct`, DATA, {
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${token}`,
-          },
-        })
+        .post(
+          `${import.meta.env.VITE_ADMIN_API_URL}/${
+            actionType == constants.public
+              ? "createnewproduct"
+              : "createnewproductatdraft"
+          }`,
+          DATA,
+          {
+            headers: {
+              "Content-Type": "application/json",
+              Authorization: `Bearer ${token}`,
+            },
+          }
+        )
         .then((res) => {
           let { data } = res;
           toast({ title: data.message });
           setNewProductData(initialNewProduct);
+          setTagsMain([]);
           setPublishBtn(false);
+          setDraftBtn(false);
           console.log(data);
           dispatch(setProgress(100));
         })
         .catch((err) => {
           console.log(err);
           setPublishBtn(false);
+          setDraftBtn(false);
           dispatch(setProgress(100));
           toast({
             variant: "destructive",
@@ -346,6 +380,7 @@ const AddProduct = () => {
     } catch (err) {
       console.log(err);
       setPublishBtn(false);
+      setDraftBtn(false);
       dispatch(setProgress(100));
       toast({
         variant: "destructive",
@@ -363,6 +398,11 @@ const AddProduct = () => {
         ),
       });
     }
+  };
+
+  const TagRemovalFunction = (item: string) => {
+    const updatedItems = tagsMain.filter((Item) => Item !== item);
+    setTagsMain(updatedItems);
   };
 
   useEffect(() => {
@@ -390,6 +430,8 @@ const AddProduct = () => {
     setMainImageUrlPreview(newProductData.mainImage.value);
   }, [newProductData.mainImage]);
 
+
+
   // const [combobox, setCombox] = useState<string>("");
 
   return (
@@ -405,12 +447,26 @@ const AddProduct = () => {
           </p>
         </div>
         <div className="flex items-center gap-4">
-          <Button disabled>Discard</Button>
-          <Button variant="secondary">Save draft</Button>
+          <Button
+            variant="secondary"
+            disabled={draftBtn}
+            onClick={() => {
+              createNewProduct(constants.private);
+            }}
+          >
+            {draftBtn ? (
+              <>
+                <ReloadIcon className="mr-2 h-4 w-4 animate-spin" />
+                Please wait
+              </>
+            ) : (
+              "Save Draft"
+            )}
+          </Button>
           <Button
             disabled={publicBtn}
             onClick={() => {
-              createNewProduct();
+              createNewProduct(constants.public);
             }}
           >
             {publicBtn ? (
@@ -768,6 +824,48 @@ const AddProduct = () => {
               </form>
             </CardContent>
           </Card> */}
+
+          {/* Tags  */}
+
+          <Card className="mt-6 w-full">
+            <CardHeader>
+              <CardTitle className="text-lg font-normal">Tags</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <textarea
+                value={tags}
+                onChange={handleTagChange}
+                placeholder="For Mens "
+                className="w-full border-2 h-[100px] py-2 px-3 rounded-md outline-none resize-x-none"
+              >
+                <p>Work</p>
+              </textarea>
+
+              {tagsMain.length > 0 && (
+                <div className="w-full rounded-md flex items-center flex-wrap gap-3  mt-3 py-2 px-4">
+                  {tagsMain.length
+                    ? tagsMain.map((item: string, index: number) => {
+                        return (
+                          <div
+                            key={index}
+                            className="text-xs bg-gray-300 w-max py-1 px-2 rounded-full flex items-center gap-2"
+                          >
+                            <p className="capitalize"> {item}</p>
+                            <CircleX
+                              className="w-3 h-3 cursor-pointer"
+                              onClick={() => {
+                                TagRemovalFunction(item);
+                              }}
+                            />
+                          </div>
+                        );
+                      })
+                    : ""}
+                </div>
+              )}
+            </CardContent>
+          </Card>
+          {/* Tags End  */}
 
           {/* variants card  */}
           <Card className="mt-6 w-full">

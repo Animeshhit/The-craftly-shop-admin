@@ -1,5 +1,4 @@
 //core
-import { NavLink } from "react-router-dom";
 
 import { ColumnDef } from "@tanstack/react-table";
 import { MoreHorizontal } from "lucide-react";
@@ -19,24 +18,24 @@ import axios from "axios";
 
 //redux
 import { login } from "../../store/Slices/userSlice";
-import { setProducts } from "../../store/Slices/productsSlice";
 import Store from "../../store/store";
 import { setProgress } from "../../store/Slices/LoadingSlice";
+import { setDrafts } from "../../store/Slices/draftsSlice";
 
 // This type is used to define the shape of our data.
 // You can use a Zod schema here if you want.
-export type Product = {
+export type Drafts = {
   _id: string;
   name: string;
   catagories: string;
   discount: Number;
   productImage: string;
   createdAt: number;
-  isBestSeller: boolean;
   isFeatured: boolean;
+  isBestSeller: boolean;
 };
 
-const deleteProduct = async (id: string, products: any) => {
+const deleteDraftProduct = async (id: string, drafts: any) => {
   try {
     let token = getToken();
     if (!token) {
@@ -46,17 +45,20 @@ const deleteProduct = async (id: string, products: any) => {
     }
     Store.dispatch(setProgress(30));
     axios
-      .delete(`${import.meta.env.VITE_ADMIN_API_URL}/deleteaproduct?id=${id}`, {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      })
+      .delete(
+        `${import.meta.env.VITE_ADMIN_API_URL}/deleteadraftproduct?id=${id}`,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      )
       .then((_) => {
-        let updatedProducts = products.filter((p: any) => {
+        let updatedProducts = drafts.filter((p: any) => {
           return p._id !== id;
         });
         Store.dispatch(setProgress(100));
-        Store.dispatch(setProducts(updatedProducts));
+        Store.dispatch(setDrafts(updatedProducts));
       })
       .catch((err) => {
         console.log(err);
@@ -70,7 +72,7 @@ const deleteProduct = async (id: string, products: any) => {
   }
 };
 
-export const columns: ColumnDef<Product>[] = [
+export const columns: ColumnDef<Drafts>[] = [
   {
     accessorKey: "name",
     header: "Product",
@@ -109,13 +111,14 @@ export const columns: ColumnDef<Product>[] = [
           )}
           {isBestSeller && (
             <div className="bg-rose-500 text-white w-max px-2 py-1 rounded-full">
-              Best Seller
+              Best seller
             </div>
           )}
         </>
       );
     },
   },
+
   {
     accessorKey: "catagories",
     header: "Categories",
@@ -178,7 +181,7 @@ export const columns: ColumnDef<Product>[] = [
               Copy product ID
             </DropdownMenuItem>
             <DropdownMenuSeparator />
-            <DropdownMenuItem className="flex items-center gap-2 cursor-pointer">
+            {/* <DropdownMenuItem className="flex items-center gap-2 cursor-pointer">
               <NavLink
                 className="flex w-full items-center gap-2 cursor-pointer"
                 to={`/editproduct/${product._id}`}
@@ -199,8 +202,8 @@ export const columns: ColumnDef<Product>[] = [
                 </svg>
                 Edit
               </NavLink>
-            </DropdownMenuItem>
-            <DropdownMenuItem className="flex items-center gap-2 cursor-pointer">
+            </DropdownMenuItem> */}
+            {/* <DropdownMenuItem className="flex items-center gap-2 cursor-pointer">
               <a
                 className="flex w-full items-center gap-2 cursor-pointer"
                 target="_blank"
@@ -224,11 +227,11 @@ export const columns: ColumnDef<Product>[] = [
                 </svg>
                 View
               </a>
-            </DropdownMenuItem>
+            </DropdownMenuItem> */}
             <DropdownMenuSeparator />
             <DropdownMenuItem
               onClick={() => {
-                deleteProduct(product._id, Store.getState().products);
+                deleteDraftProduct(product._id, Store.getState().drafts);
               }}
               className="flex items-center gap-2 cursor-pointer bg-red-500 text-white"
             >

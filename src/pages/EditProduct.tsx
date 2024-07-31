@@ -35,6 +35,7 @@ import { login } from "../store/Slices/userSlice";
 import { setProgress } from "../store/Slices/LoadingSlice";
 import axios from "axios";
 import { ToastAction } from "../components/ui/toast";
+import { CircleX } from "lucide-react";
 
 const EditProduct = () => {
   let { id } = useParams();
@@ -100,6 +101,20 @@ const EditProduct = () => {
     string | undefined
   >(undefined);
 
+  const [tags, setTags] = useState<string>("");
+  const [tagsMain, setTagsMain] = useState<string[] | []>([]);
+
+  const handleTagChange = (e: any) => {
+    const value = e.target.value;
+    const words = value.split(" ");
+    setTags(value);
+
+    if (value.endsWith(" ")) {
+      setTagsMain([...tagsMain, words[words.length - 2]]);
+      setTags("");
+    }
+  };
+
   // =====================================Edit Work =============================
   const getAProductToEdit = async (productId: string) => {
     try {
@@ -122,6 +137,7 @@ const EditProduct = () => {
           setIsBestSellerProduct(product.isBestSeller);
           setMainImageUrl(product.productImage);
           setMarkDown(product.description);
+          setTagsMain(product.tags);
           setProductToEdit(true);
           dispatch(setProgress(100));
         })
@@ -272,6 +288,7 @@ const EditProduct = () => {
         productImages: uploadedUrls,
         productUniqueId: productUniqueId,
         stock: stock,
+        tags: tagsMain,
         isFeatured: isFeaturedProduct,
         isBestSeller: isBestSellerProduct,
       };
@@ -300,6 +317,7 @@ const EditProduct = () => {
           setIsBestSellerProduct(product.isBestSeller);
           setMainImageUrl(product.productImage);
           setMarkDown(product.description);
+          setTagsMain(product.tags);
           dispatch(setProgress(100));
           setPublishBtn(false);
           toast({ title: data.message });
@@ -334,6 +352,11 @@ const EditProduct = () => {
         ),
       });
     }
+  };
+
+  const TagRemovalFunction = (item: string) => {
+    const updatedItems = tagsMain.filter((Item) => Item !== item);
+    setTagsMain(updatedItems);
   };
 
   useEffect(() => {
@@ -673,6 +696,48 @@ const EditProduct = () => {
               </form>
             </CardContent>
           </Card> */}
+
+          {/* Tags  */}
+
+          <Card className="mt-6 w-full">
+            <CardHeader>
+              <CardTitle className="text-lg font-normal">Tags</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <textarea
+                value={tags}
+                onChange={handleTagChange}
+                placeholder="For Mens "
+                className="w-full border-2 h-[100px] py-2 px-3 rounded-md outline-none resize-x-none"
+              >
+                <p>Work</p>
+              </textarea>
+
+              {tagsMain.length > 0 && (
+                <div className="w-full rounded-md flex items-center flex-wrap gap-3  mt-3 py-2 px-4">
+                  {tagsMain.length
+                    ? tagsMain.map((item: string, index: number) => {
+                        return (
+                          <div
+                            key={index}
+                            className="text-xs bg-gray-300 w-max py-1 px-2 rounded-full flex items-center gap-2"
+                          >
+                            <p className="capitalize"> {item}</p>
+                            <CircleX
+                              className="w-3 h-3 cursor-pointer"
+                              onClick={() => {
+                                TagRemovalFunction(item);
+                              }}
+                            />
+                          </div>
+                        );
+                      })
+                    : ""}
+                </div>
+              )}
+            </CardContent>
+          </Card>
+          {/* Tags End  */}
 
           {/* variants card  */}
           <Card className="mt-6 w-full">
