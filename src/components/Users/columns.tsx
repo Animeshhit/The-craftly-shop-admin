@@ -22,9 +22,9 @@ import { setProgress } from "../../store/Slices/LoadingSlice";
 // You can use a Zod schema here if you want.
 export type User = {
   _id: string;
-  username: string | null;
+  name: string | null;
   email: string | null;
-  mobile: number;
+  phone: number;
   isAdmin: boolean;
   createdAt: Date;
 };
@@ -76,10 +76,10 @@ const changeAccess = async (id: string) => {
 
 export const columns: ColumnDef<User>[] = [
   {
-    accessorKey: "username",
+    accessorKey: "name",
     header: "Username",
     cell: ({ row }) => {
-      let uname = row.getValue<string | null>("username");
+      let uname = row.getValue<string | null>("name");
       return (
         <p>
           {uname ? (
@@ -110,7 +110,7 @@ export const columns: ColumnDef<User>[] = [
     },
   },
   {
-    accessorKey: "mobile",
+    accessorKey: "phone",
     header: "Mobile",
   },
   {
