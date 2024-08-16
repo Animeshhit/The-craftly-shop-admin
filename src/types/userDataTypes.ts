@@ -1,6 +1,6 @@
-interface userData{
-    mobile:undefined | string,
-    password:string
-  }
+interface userData {
+  phone: undefined | string;
+  password: string;
+}
 
-export type {userData};
+export type { userData };

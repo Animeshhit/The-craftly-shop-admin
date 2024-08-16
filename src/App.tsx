@@ -46,7 +46,7 @@ const App = () => {
   // login system ====================================
 
   const initialData = {
-    mobile: undefined,
+    phone: undefined,
     password: "",
   };
   let user = useSelector((s: any) => s.user.user);
@@ -67,6 +67,7 @@ const App = () => {
     try {
       setButton(true);
       dispatch(setProgress(30));
+      console.log(data);
       axios
         .post(`${import.meta.env.VITE_BASE_API_URL}/auth/login`, data, {
           headers: {
@@ -74,6 +75,7 @@ const App = () => {
           },
         })
         .then((res) => {
+          console.log(res);
           let { data }: any = res;
           if (data.user.isAdmin) {
             setTokenWithExpiration(data.token, 1200000);

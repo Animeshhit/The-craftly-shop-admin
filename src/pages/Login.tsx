@@ -31,7 +31,7 @@ export default function Login(props: {
   const [isPasswordVisiable, setIsPasswordVisiable] = useState(false);
 
   const loginUser = () => {
-    if (props.data.mobile == undefined) {
+    if (props.data.phone == undefined) {
       alert("Invalid Mobile number");
     } else if (props.data.password == "") {
       alert("Password Can't be empty");
@@ -54,11 +54,11 @@ export default function Login(props: {
             <form>
               <div className="grid w-full items-center gap-4">
                 <div className="flex flex-col space-y-1.5">
-                  <Label htmlFor="mobile">Mobile</Label>
+                  <Label htmlFor="phone">Mobile</Label>
                   <Input
-                    name="mobile"
-                    value={props.data.mobile}
-                    id="mobile"
+                    name="phone"
+                    value={props.data.phone}
+                    id="phone"
                     required={true}
                     type="Number"
                     placeholder="Enter Mobile Number"
