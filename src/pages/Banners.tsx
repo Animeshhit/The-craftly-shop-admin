@@ -31,7 +31,6 @@ import { useDispatch, useSelector } from "react-redux";
 import { login } from "../store/Slices/userSlice";
 import { setBanners } from "../store/Slices/bannerSlice";
 import { ReloadIcon } from "@radix-ui/react-icons";
-import { encode } from "blurhash";
 import { setProgress } from "../store/Slices/LoadingSlice";
 
 const Banners = () => {
@@ -61,12 +60,6 @@ const Banners = () => {
 
   const [previewForPhone, setPreviewForPhone] = useState<
     ArrayBuffer[] | string[] | null
-  >(null);
-
-  const [bannerImageHash, setBannerImageHash] = useState<string | null>(null);
-
-  const [phoneBannerImageHash, setPhoneBannerImageHash] = useState<
-    string | null
   >(null);
 
   // preview image url ============================================================
@@ -237,7 +230,6 @@ const Banners = () => {
     if (Array.isArray(acceptedFiles)) {
       if (!acceptedFiles.length) {
         setPreview([]);
-        setBannerImageHash(null);
       }
     }
     acceptedFiles && acceptedFiles.length
@@ -251,7 +243,6 @@ const Banners = () => {
     if (Array.isArray(FilesForPhone)) {
       if (!FilesForPhone.length) {
         setPreviewForPhone([]);
-        setPhoneBannerImageHash(null);
       }
       FilesForPhone && FilesForPhone.length
         ? getImageBaseUrl(FilesForPhone, setPreviewForPhone)
@@ -259,76 +250,6 @@ const Banners = () => {
     }
     dispatch(setProgress(100));
   }, [FilesForPhone]);
-
-  useEffect(() => {
-    dispatch(setProgress(50));
-    if (Array.isArray(preview)) {
-      if (preview?.length > 0) {
-        const image = new Image();
-        image.src = preview[0] as string;
-        image.onload = async () => {
-          const canvas = document.createElement("canvas");
-          const context = canvas.getContext("2d");
-          canvas.width = image.width;
-          canvas.height = image.height;
-          context?.drawImage(image, 0, 0, image.width, image.height);
-          const imageData = context?.getImageData(
-            0,
-            0,
-            image.width,
-            image.height
-          );
-          console.log(imageData);
-          if (!imageData) return;
-          const hash = await encode(
-            imageData.data,
-            image.width,
-            image.height,
-            4,
-            4
-          );
-          console.log(hash);
-          setBannerImageHash(hash);
-        };
-      }
-    }
-    dispatch(setProgress(100));
-  }, [preview]);
-
-  useEffect(() => {
-    dispatch(setProgress(50));
-    if (Array.isArray(previewForPhone)) {
-      if (previewForPhone?.length > 0) {
-        const image = new Image();
-        image.src = previewForPhone[0] as string;
-        image.onload = async () => {
-          const canvas = document.createElement("canvas");
-          const context = canvas.getContext("2d");
-          canvas.width = image.width;
-          canvas.height = image.height;
-          context?.drawImage(image, 0, 0, image.width, image.height);
-          const imageData = context?.getImageData(
-            0,
-            0,
-            image.width,
-            image.height
-          );
-          console.log(imageData);
-          if (!imageData) return;
-          const hash = await encode(
-            imageData.data,
-            image.width,
-            image.height,
-            4,
-            4
-          );
-          console.log(hash);
-          setPhoneBannerImageHash(hash);
-        };
-      }
-    }
-    dispatch(setProgress(100));
-  }, [previewForPhone]);
 
   useEffect(() => {
     getBanners();
@@ -412,9 +333,9 @@ const Banners = () => {
             .then((phoneImage) => {
               let apiData = {
                 bannerImage: response.data.secure_url,
-                bannerImageHash: bannerImageHash,
+                bannerImageHash: "justesehi",
                 phoneBannerImage: phoneImage.data.secure_url,
-                phoneBannerImageHash: phoneBannerImageHash,
+                phoneBannerImageHash: "justesehi",
                 ...newBannerData,
               };
 
