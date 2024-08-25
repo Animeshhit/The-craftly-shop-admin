@@ -35,6 +35,7 @@ export type Product = {
   createdAt: number;
   isBestSeller: boolean;
   isFeatured: boolean;
+  isAvailable: boolean;
 };
 
 const deleteProduct = async (id: string, products: any) => {
@@ -53,8 +54,11 @@ const deleteProduct = async (id: string, products: any) => {
         },
       })
       .then((_) => {
-        let updatedProducts = products.filter((p: any) => {
-          return p._id !== id;
+        let updatedProducts = products.map((p: any) => {
+          if (p._id === id) {
+            return { ...p, isAvailable: false };
+          }
+          return p;
         });
         Store.dispatch(setProgress(100));
         Store.dispatch(setProducts(updatedProducts));
@@ -111,6 +115,30 @@ export const columns: ColumnDef<Product>[] = [
           {isBestSeller && (
             <div className="bg-rose-500 text-white w-max px-2 py-1 rounded-full">
               Best Seller
+            </div>
+          )}
+        </>
+      );
+    },
+  },
+  {
+    accessorKey: "isAvailable",
+    header: "isDeleted",
+    cell: ({ row }) => {
+      const isDeleted = row.getValue<boolean>("isAvailable");
+      return (
+        <>
+          {!isDeleted ? (
+            <div
+              className={`bg-red-500 text-white w-max px-2 py-1 rounded-full`}
+            >
+              True
+            </div>
+          ) : (
+            <div
+              className={`bg-blue-500 text-white w-max px-2 py-1 rounded-full`}
+            >
+              False
             </div>
           )}
         </>
@@ -221,13 +249,41 @@ export const columns: ColumnDef<Product>[] = [
               </svg>
               Move To Draft
             </DropdownMenuItem>
-            <DropdownMenuItem className="flex items-center gap-2 cursor-pointer">
-              <a
-                className="flex w-full items-center gap-2 cursor-pointer"
-                target="_blank"
-                href={`${import.meta.env.VITE_FRONTENDUI}/product/${
-                  product.catagories
-                }/${product._id}`}
+            {row.original.isAvailable && (
+              <DropdownMenuItem className="flex items-center gap-2 cursor-pointer">
+                <a
+                  className="flex w-full items-center gap-2 cursor-pointer"
+                  target="_blank"
+                  href={`${import.meta.env.VITE_FRONTENDUI}/product/${
+                    product.catagories
+                  }/${product._id}`}
+                >
+                  <svg
+                    width="15"
+                    height="15"
+                    viewBox="0 0 15 15"
+                    fill="none"
+                    xmlns="http://www.w3.org/2000/svg"
+                  >
+                    <path
+                      d="M7.5 11C4.80285 11 2.52952 9.62184 1.09622 7.50001C2.52952 5.37816 4.80285 4 7.5 4C10.1971 4 12.4705 5.37816 13.9038 7.50001C12.4705 9.62183 10.1971 11 7.5 11ZM7.5 3C4.30786 3 1.65639 4.70638 0.0760002 7.23501C-0.0253338 7.39715 -0.0253334 7.60288 0.0760014 7.76501C1.65639 10.2936 4.30786 12 7.5 12C10.6921 12 13.3436 10.2936 14.924 7.76501C15.0253 7.60288 15.0253 7.39715 14.924 7.23501C13.3436 4.70638 10.6921 3 7.5 3ZM7.5 9.5C8.60457 9.5 9.5 8.60457 9.5 7.5C9.5 6.39543 8.60457 5.5 7.5 5.5C6.39543 5.5 5.5 6.39543 5.5 7.5C5.5 8.60457 6.39543 9.5 7.5 9.5Z"
+                      fill="currentColor"
+                      fill-rule="evenodd"
+                      clip-rule="evenodd"
+                    ></path>
+                  </svg>
+                  View
+                </a>
+              </DropdownMenuItem>
+            )}
+
+            <DropdownMenuSeparator />
+            {row.original.isAvailable && (
+              <DropdownMenuItem
+                onClick={() => {
+                  deleteProduct(product._id, Store.getState().products);
+                }}
+                className="flex items-center gap-2 cursor-pointer bg-red-500 text-white"
               >
                 <svg
                   width="15"
@@ -237,38 +293,15 @@ export const columns: ColumnDef<Product>[] = [
                   xmlns="http://www.w3.org/2000/svg"
                 >
                   <path
-                    d="M7.5 11C4.80285 11 2.52952 9.62184 1.09622 7.50001C2.52952 5.37816 4.80285 4 7.5 4C10.1971 4 12.4705 5.37816 13.9038 7.50001C12.4705 9.62183 10.1971 11 7.5 11ZM7.5 3C4.30786 3 1.65639 4.70638 0.0760002 7.23501C-0.0253338 7.39715 -0.0253334 7.60288 0.0760014 7.76501C1.65639 10.2936 4.30786 12 7.5 12C10.6921 12 13.3436 10.2936 14.924 7.76501C15.0253 7.60288 15.0253 7.39715 14.924 7.23501C13.3436 4.70638 10.6921 3 7.5 3ZM7.5 9.5C8.60457 9.5 9.5 8.60457 9.5 7.5C9.5 6.39543 8.60457 5.5 7.5 5.5C6.39543 5.5 5.5 6.39543 5.5 7.5C5.5 8.60457 6.39543 9.5 7.5 9.5Z"
+                    d="M5.5 1C5.22386 1 5 1.22386 5 1.5C5 1.77614 5.22386 2 5.5 2H9.5C9.77614 2 10 1.77614 10 1.5C10 1.22386 9.77614 1 9.5 1H5.5ZM3 3.5C3 3.22386 3.22386 3 3.5 3H5H10H11.5C11.7761 3 12 3.22386 12 3.5C12 3.77614 11.7761 4 11.5 4H11V12C11 12.5523 10.5523 13 10 13H5C4.44772 13 4 12.5523 4 12V4L3.5 4C3.22386 4 3 3.77614 3 3.5ZM5 4H10V12H5V4Z"
                     fill="currentColor"
                     fill-rule="evenodd"
                     clip-rule="evenodd"
                   ></path>
                 </svg>
-                View
-              </a>
-            </DropdownMenuItem>
-            <DropdownMenuSeparator />
-            <DropdownMenuItem
-              onClick={() => {
-                deleteProduct(product._id, Store.getState().products);
-              }}
-              className="flex items-center gap-2 cursor-pointer bg-red-500 text-white"
-            >
-              <svg
-                width="15"
-                height="15"
-                viewBox="0 0 15 15"
-                fill="none"
-                xmlns="http://www.w3.org/2000/svg"
-              >
-                <path
-                  d="M5.5 1C5.22386 1 5 1.22386 5 1.5C5 1.77614 5.22386 2 5.5 2H9.5C9.77614 2 10 1.77614 10 1.5C10 1.22386 9.77614 1 9.5 1H5.5ZM3 3.5C3 3.22386 3.22386 3 3.5 3H5H10H11.5C11.7761 3 12 3.22386 12 3.5C12 3.77614 11.7761 4 11.5 4H11V12C11 12.5523 10.5523 13 10 13H5C4.44772 13 4 12.5523 4 12V4L3.5 4C3.22386 4 3 3.77614 3 3.5ZM5 4H10V12H5V4Z"
-                  fill="currentColor"
-                  fill-rule="evenodd"
-                  clip-rule="evenodd"
-                ></path>
-              </svg>
-              Delete
-            </DropdownMenuItem>
+                Delete
+              </DropdownMenuItem>
+            )}
           </DropdownMenuContent>
         </DropdownMenu>
       );

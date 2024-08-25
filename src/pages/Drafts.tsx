@@ -31,7 +31,9 @@ const Drafts = () => {
       dispatch(setProgress(30));
       axios
         .get(
-          `${import.meta.env.VITE_BASE_API_URL}/drafts?page=${page}&limit=10`
+          `${
+            import.meta.env.VITE_BASE_API_URL
+          }/products/by?query=drafts&page=${page}&limit=10`
         )
         .then((res) => {
           let { data } = res;

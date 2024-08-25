@@ -339,23 +339,16 @@ const AddProduct = () => {
       tags: tagsMain,
       isFeatured,
       isBestSeller,
+      isDraft: actionType == constants.private ? true : false,
     };
     try {
       axios
-        .post(
-          `${import.meta.env.VITE_ADMIN_API_URL}/${
-            actionType == constants.public
-              ? "createnewproduct"
-              : "createnewproductatdraft"
-          }`,
-          DATA,
-          {
-            headers: {
-              "Content-Type": "application/json",
-              Authorization: `Bearer ${token}`,
-            },
-          }
-        )
+        .post(`${import.meta.env.VITE_ADMIN_API_URL}/createnewproduct`, DATA, {
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+        })
         .then((res) => {
           let { data } = res;
           toast({ title: data.message });
@@ -429,8 +422,6 @@ const AddProduct = () => {
     }
     setMainImageUrlPreview(newProductData.mainImage.value);
   }, [newProductData.mainImage]);
-
-
 
   // const [combobox, setCombox] = useState<string>("");
 

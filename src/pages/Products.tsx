@@ -31,7 +31,9 @@ const Products = () => {
       dispatch(setProgress(30));
       axios
         .get(
-          `${import.meta.env.VITE_BASE_API_URL}/products?page=${page}&limit=10`
+          `${
+            import.meta.env.VITE_BASE_API_URL
+          }/products/by?query=products&page=${page}&limit=10`
         )
         .then((res) => {
           let { data } = res;

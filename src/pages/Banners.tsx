@@ -333,9 +333,7 @@ const Banners = () => {
             .then((phoneImage) => {
               let apiData = {
                 bannerImage: response.data.secure_url,
-                bannerImageHash: "justesehi",
                 phoneBannerImage: phoneImage.data.secure_url,
-                phoneBannerImageHash: "justesehi",
                 ...newBannerData,
               };
 
