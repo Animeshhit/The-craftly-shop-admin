@@ -1,6 +1,9 @@
 //core
 import { useState, useCallback, useEffect } from "react";
 
+//firebase
+import { handleFileUpload } from "../lib/uploadFiles";
+
 //others
 import { Button } from "../components/ui/button";
 import {
@@ -307,24 +310,29 @@ const AddProduct = () => {
     setDraftBtn(true);
     dispatch(setProgress(30));
     // file uploaded ========================================
-    const uploadPreset = import.meta.env.VITE_CLD_UPLOADPRESET;
 
-    const uploaders = Array.from(acceptedFiles).map((file) => {
-      const formData = new FormData();
-      formData.append("file", file);
-      formData.append("upload_preset", uploadPreset);
+    // const uploadPreset = import.meta.env.VITE_CLD_UPLOADPRESET;
 
-      return axios
-        .post(import.meta.env.VITE_CLD_UPLOAD_URL, formData)
-        .then((response) => response.data);
-    });
-    dispatch(setProgress(50));
-    const uploadedFilesData = await Promise.all(uploaders);
-    dispatch(setProgress(80));
-    // file uploaded end ========================================
-    const uploadedUrls = uploadedFilesData.map(
-      (uploaded) => uploaded.secure_url
-    );
+    // const uploaders = Array.from(acceptedFiles).map((file) => {
+    //   const formData = new FormData();
+    //   formData.append("file", file);
+    //   formData.append("upload_preset", uploadPreset);
+
+    //   return axios
+    //     .post(import.meta.env.VITE_CLD_UPLOAD_URL, formData)
+    //     .then((response) => response.data);
+    // });
+    // dispatch(setProgress(50));
+    // const uploadedFilesData = await Promise.all(uploaders);
+    // dispatch(setProgress(80));
+    // // file uploaded end ========================================
+    // const uploadedUrls = uploadedFilesData.map(
+    //   (uploaded) => uploaded.secure_url
+    // );
+
+    const uploadedUrls = await handleFileUpload(acceptedFiles, dispatch);
+
+    
 
     let DATA = {
       name: name.value,

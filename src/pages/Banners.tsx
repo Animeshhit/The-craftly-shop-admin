@@ -26,6 +26,10 @@ import getImageBaseUrl from "../helper/getImageBaseUrl";
 import { useToast } from "../components/ui/use-toast";
 import { ToastAction } from "../components/ui/toast";
 
+//firebase
+import storage from "../lib/firebase";
+import { ref, uploadBytesResumable, getDownloadURL } from "firebase/storage";
+
 //redux
 import { useDispatch, useSelector } from "react-redux";
 import { login } from "../store/Slices/userSlice";
@@ -311,84 +315,90 @@ const Banners = () => {
 
       setCreateBannerBtn(true);
       // file uploaded ========================================
-      const uploadPreset = import.meta.env.VITE_CLD_UPLOADPRESET;
+      const storageRef = ref(storage, "uploads/" + acceptedFiles[0].name);
 
-      const formData = new FormData();
-      formData.append("file", acceptedFiles[0]);
-      formData.append("upload_preset", uploadPreset);
+      const uploadTask = uploadBytesResumable(storageRef, acceptedFiles[0]);
 
-      const formDataForPhone = new FormData();
+      uploadTask.on(
+        "state_changed",
+        (snapshot) => {
+          const progress =
+            (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
+          dispatch(setProgress(progress)); // Update the progress bar
+        },
+        (error) => {
+          // Handle unsuccessful uploads
+          console.error("Upload failed:", error);
+        },
+        () => {
+          getDownloadURL(uploadTask.snapshot.ref).then(
+            (bannerImage: string) => {
+              const storageRefForPhone = ref(
+                storage,
+                "uploads/" + FilesForPhone[0]
+              );
 
-      formDataForPhone.append("file", FilesForPhone[0]);
-      formDataForPhone.append("upload_preset", uploadPreset);
-      //for laptop image
-      dispatch(setProgress(30));
-      axios
-        .post(import.meta.env.VITE_CLD_UPLOAD_URL, formData)
-        .then((response) => {
-          //for phone image
-          dispatch(setProgress(50));
-          axios
-            .post(import.meta.env.VITE_CLD_UPLOAD_URL, formDataForPhone)
-            .then((phoneImage) => {
-              let apiData = {
-                bannerImage: response.data.secure_url,
-                phoneBannerImage: phoneImage.data.secure_url,
-                ...newBannerData,
-              };
+              const uploadforphoneTask = uploadBytesResumable(
+                storageRefForPhone,
+                FilesForPhone[0]
+              );
 
-              // uploading the image link to server
-              axios
-                .post(
-                  `${import.meta.env.VITE_ADMIN_API_URL}/addnewbanner`,
-                  apiData,
-                  {
-                    headers: {
-                      "Content-Type": "application/json",
-                      Authorization: `Bearer ${token}`,
-                    },
-                  }
-                )
-                .then((res) => {
-                  let { data } = res;
-                  console.log(data);
-                  toast({ title: data.message });
-                  dispatch(setBanners([...banners, data.banner]));
-                  dispatch(setProgress(100));
-                  setCreateBannerBtn(false);
-                })
-                .catch((err) => {
-                  setCreateBannerBtn(false);
-                  dispatch(setProgress(100));
-                  console.log(err);
-                  toast({
-                    variant: "destructive",
-                    title: "Error",
-                    description: "something went wrong",
-                  });
-                });
-            })
-            .catch((err) => {
-              console.log(err);
-              dispatch(setProgress(100));
-              setCreateBannerBtn(false);
-              toast({
-                variant: "destructive",
-                title: "Error",
-                description: "something went wrong",
-              });
-            });
-        })
-        .catch((err) => {
-          console.log(err);
-          setCreateBannerBtn(false);
-          dispatch(setProgress(100));
-          toast({
-            variant: "destructive",
-            title: "Error",
-            description: "something went wrong",
-          });
-        });
+              uploadforphoneTask.on(
+                "state_changed",
+                (snap) => {
+                  const progress =
+                    (snap.bytesTransferred / snap.totalBytes) * 100;
+                  dispatch(setProgress(progress));
+                },
+                (err) => {
+                  console.error("Upload failed:", err);
+                },
+                () => {
+                  getDownloadURL(uploadforphoneTask.snapshot.ref).then(
+                    (phoneBannerImage: string) => {
+                      // uploading the image link to server
+                      axios
+                        .post(
+                          `${import.meta.env.VITE_ADMIN_API_URL}/addnewbanner`,
+                          {
+                            bannerImage,
+                            phoneBannerImage,
+                            bannerLink,
+                            bannerText: newBannerData.bannerText,
+                          },
+                          {
+                            headers: {
+                              "Content-Type": "application/json",
+                              Authorization: `Bearer ${token}`,
+                            },
+                          }
+                        )
+                        .then((res) => {
+                          let { data } = res;
+                          console.log(data);
+                          toast({ title: data.message });
+                          dispatch(setBanners([...banners, data.banner]));
+                          dispatch(setProgress(100));
+                          setCreateBannerBtn(false);
+                        })
+                        .catch((err) => {
+                          setCreateBannerBtn(false);
+                          dispatch(setProgress(100));
+                          console.log(err);
+                          toast({
+                            variant: "destructive",
+                            title: "Error",
+                            description: "something went wrong",
+                          });
+                        });
+                    }
+                  );
+                }
+              );
+            }
+          );
+        }
+      );
     } catch (err) {
       console.log(err);
       setCreateBannerBtn(false);
